@@ -120,7 +120,7 @@ export function HomePage() {
               "radial-gradient(circle at 20% 20%, oklch(0.78 0.17 55 / 0.4) 0%, transparent 40%), radial-gradient(circle at 80% 80%, oklch(0.45 0.16 280 / 0.5) 0%, transparent 50%)",
           }}
         />
-        <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-16 md:py-28">
+        <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-10 md:py-16">
           <div className="max-w-3xl mx-auto text-center animate-fade-up">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-1.5 text-xs font-medium border border-white/20">
               <Sparkles className="h-3.5 w-3.5 text-accent-glow" /> India's Modern Business
