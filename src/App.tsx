@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { FloatingActions } from "@/components/site/FloatingActions";
@@ -35,12 +36,23 @@ function NotFoundPage() {
   );
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return null;
+}
+
 function AppShell() {
   const { pathname } = useLocation();
   const hideChrome = pathname === "/login";
 
   return (
     <div className="flex min-h-screen flex-col">
+      <ScrollToTop />
       {!hideChrome && <Header />}
       <main className="flex-1">
         <Routes>

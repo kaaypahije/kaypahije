@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Phone, Send, Globe, Camera, MessageSquare, Video } from "lucide-react";
+import { Mail, MapPin, Phone, Globe, Camera, MessageSquare, Video } from "lucide-react";
 
 const socials = [Globe, Camera, MessageSquare, Video];
 import logo from "@/assets/logo.jpeg";
@@ -84,32 +84,11 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 rounded-2xl border border-white/10 bg-white/5 p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h4 className="text-lg font-semibold">Stay in the loop</h4>
-              <p className="text-sm text-primary-foreground/70">
-                Get weekly picks, offers and trending businesses near you.
-              </p>
-            </div>
-            <form className="flex w-full max-w-md gap-2" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="flex-1 rounded-full bg-white/10 border border-white/15 px-4 py-2.5 text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-              <button className="inline-flex items-center gap-1.5 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow-soft">
-                <Send className="h-4 w-4" /> Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-primary-foreground/60">
-          <p>© {new Date().getFullYear()} Kay Pahije. All rights reserved.</p>
-          <p>Made with ❤ in India</p>
-        </div>
+        <div className="mt-10 flex items-center justify-center border-t border-white/10 pt-6 text-xs text-primary-foreground/60">
+          <p>© {new Date().getFullYear()} Kay Pahije. All rights reserved.</p>        </div>
       </div>
     </footer>
   );
 }
+
+

@@ -15,7 +15,7 @@ import {
   Zap,
   Heart,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BusinessCard } from "@/components/site/BusinessCard";
 import { CategoryGrid } from "@/components/site/CategoryGrid";
 import { businesses, cities, trendingSearches } from "@/data/businesses";
@@ -106,6 +106,32 @@ export function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [city, setCity] = useState("Pune");
   const [query, setQuery] = useState("");
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
+
+  const heroSlides = [
+    {
+      badge: "India's Modern Business Directory",
+      headingTop: "Tumhala kay pahije?",
+      headingBottom: "We'll find it for you.",
+      description:
+        "Discover 1M+ verified local businesses across India. Restaurants, services, hospitals, hotels - all in one beautifully simple place.",
+    },
+    {
+      badge: "Find Local. Choose Smart.",
+      headingTop: "Trusted businesses are just one search away.",
+      headingBottom: "",
+      description:
+        "Explore verified restaurants, hospitals, hotels, shops, and services near you — faster, easier, and all in one place.",
+    },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveHeroSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 4500);
+
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
 
   const featured = businesses.filter((b) => b.featured);
   const popular = businesses.slice(0, 8);
@@ -122,19 +148,37 @@ export function HomePage() {
         />
         <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-10 md:py-16">
           <div className="max-w-3xl mx-auto text-center animate-fade-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-1.5 text-xs font-medium border border-white/20">
-              <Sparkles className="h-3.5 w-3.5 text-accent-glow" /> India's Modern Business
-              Directory
-            </span>
-            <h1 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
-              Tumhala <span className="text-gradient-accent">kay pahije?</span>
-              <br />
-              <span className="text-white/90">We'll find it for you.</span>
-            </h1>
-            <p className="mt-5 text-base md:text-lg text-white/75 max-w-2xl mx-auto">
-              Discover 1M+ verified local businesses across India. Restaurants, services, hospitals,
-              hotels - all in one beautifully simple place.
-            </p>
+            <div className="relative min-h-[240px] md:min-h-[280px]">
+              {heroSlides.map((slide, idx) => (
+                <div
+                  key={slide.badge}
+                  className={`absolute inset-0 transition-all duration-700 ease-out ${
+                    idx === activeHeroSlide
+                      ? "opacity-100 translate-y-0 pointer-events-auto"
+                      : "opacity-0 translate-y-4 pointer-events-none"
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-1.5 text-xs font-medium border border-white/20">
+                    <Sparkles className="h-3.5 w-3.5 text-accent-glow" /> {slide.badge}
+                  </span>
+                  {idx === 0 ? (
+                    <h1 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
+                      Tumhala <span className="text-gradient-accent">kay pahije?</span>
+                      <br />
+                      <span className="text-white/90">We'll find it for you.</span>
+                    </h1>
+                  ) : (
+                    <h1 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
+                      <span className="text-gradient-accent">{slide.headingTop}</span>
+                    </h1>
+                  )}
+                  <p className="mt-5 text-base md:text-lg text-white/75 max-w-2xl mx-auto">
+                    {slide.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4" />
           </div>
 
           <div
@@ -215,21 +259,14 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="bg-secondary/50 py-16 md:py-24">
+      <section className="bg-secondary/50 pt-8 md:pt-12 pb-16 md:pb-24">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="flex items-end justify-between gap-4 mb-10">
+          <div className="mb-10">
             <SectionHeader
-              align="left"
               eyebrow="Hand-picked"
               title="Featured Businesses"
               subtitle="Top-rated, verified businesses our community loves."
             />
-            <Link
-              to="/listings"
-              className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:gap-2 transition-all"
-            >
-              View all <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {featured.map((b, i) => (

@@ -2,7 +2,7 @@ import { CategoryGrid } from "@/components/site/CategoryGrid";
 
 export function CategoriesPage() {
   return (
-    <section className="mx-auto max-w-7xl px-4 md:px-6 py-12 md:py-20">
+    <section className="mx-auto max-w-7xl px-4 md:px-6 pt-6 md:pt-10 pb-12 md:pb-20">
       <div className="text-center max-w-2xl mx-auto">
         <span className="inline-flex rounded-full bg-accent/10 text-accent px-3 py-1 text-xs font-semibold uppercase tracking-wider">
           Explore
