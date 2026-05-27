@@ -115,13 +115,23 @@ export function HomePage() {
       headingBottom: "We'll find it for you.",
       description:
         "Discover 1M+ verified local businesses across India. Restaurants, services, hospitals, hotels - all in one beautifully simple place.",
+      points: ["100% Verified", "Top Locations", "Affordable Options", "24/7 Support"],
+      rightLabel: "Trusted Across India",
+      rightValue: "1M+ Listings",
+      heroImage:
+        "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80",
     },
     {
       badge: "Find Local. Choose Smart.",
       headingTop: "Trusted businesses are just one search away.",
       headingBottom: "",
       description:
-        "Explore verified restaurants, hospitals, hotels, shops, and services near you — faster, easier, and all in one place.",
+        "Explore verified restaurants, hospitals, hotels, shops, and services near you - faster, easier, and all in one place.",
+      points: ["Fast Search", "Rated Businesses", "Instant Contact", "Easy Compare"],
+      rightLabel: "Search Smarter",
+      rightValue: "500+ Cities",
+      heroImage:
+        "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80",
     },
   ];
 
@@ -133,12 +143,11 @@ export function HomePage() {
     return () => clearInterval(timer);
   }, [heroSlides.length]);
 
-  const featured = businesses.filter((b) => b.featured);
   const popular = businesses.slice(0, 8);
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-hero text-primary-foreground">
+      <section className="relative overflow-visible bg-gradient-hero text-primary-foreground">
         <div
           className="absolute inset-0 opacity-30"
           style={{
@@ -147,38 +156,81 @@ export function HomePage() {
           }}
         />
         <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-10 md:py-16">
-          <div className="max-w-3xl mx-auto text-center animate-fade-up">
-            <div className="relative min-h-[240px] md:min-h-[280px]">
+          <div className="max-w-6xl mx-auto animate-fade-up">
+            <div className="relative min-h-[460px] md:min-h-[430px] lg:min-h-[390px] rounded-[2rem] border border-white/15 bg-white/10 p-4 md:p-5 backdrop-blur">
               {heroSlides.map((slide, idx) => (
                 <div
                   key={slide.badge}
                   className={`absolute inset-0 transition-all duration-700 ease-out ${
                     idx === activeHeroSlide
-                      ? "opacity-100 translate-y-0 pointer-events-auto"
-                      : "opacity-0 translate-y-4 pointer-events-none"
+                      ? "opacity-100 translate-x-0 pointer-events-auto"
+                      : "opacity-0 translate-x-4 pointer-events-none"
                   }`}
                 >
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-1.5 text-xs font-medium border border-white/20">
-                    <Sparkles className="h-3.5 w-3.5 text-accent-glow" /> {slide.badge}
-                  </span>
-                  {idx === 0 ? (
-                    <h1 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
-                      Tumhala <span className="text-gradient-accent">kay pahije?</span>
-                      <br />
-                      <span className="text-white/90">We'll find it for you.</span>
-                    </h1>
-                  ) : (
-                    <h1 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
-                      <span className="text-gradient-accent">{slide.headingTop}</span>
-                    </h1>
-                  )}
-                  <p className="mt-5 text-base md:text-lg text-white/75 max-w-2xl mx-auto">
-                    {slide.description}
-                  </p>
+                  <div className="h-full w-full rounded-[1.5rem] bg-gradient-to-r from-[#f7dfcc]/95 via-[#f3c79f]/90 to-[#efb177]/85 p-6 md:p-8 text-[#1a2033] shadow-soft">
+                    <div className="grid h-full items-center gap-6 md:grid-cols-[1.1fr_0.9fr]">
+                      <div className="min-w-0">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-[#ef8f37]/35 bg-[#fff3e9] px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-[#de6b00]">
+                          <Sparkles className="h-3.5 w-3.5" /> {slide.badge}
+                        </span>
+                        {idx === 0 ? (
+                          <h1 className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-[#25304d]">
+                            Tumhala <span className="text-[#e77315]">kay pahije?</span>
+                            <br />
+                            <span className="text-[#2f3a57]">We'll find it for you.</span>
+                          </h1>
+                        ) : (
+                          <h1 className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-[#25304d]">
+                            {slide.headingTop}
+                          </h1>
+                        )}
+                        <p className="mt-4 max-w-2xl text-sm md:text-base text-[#3f4a66]">
+                          {slide.description}
+                        </p>
+                        <div className="mt-6 grid grid-cols-2 gap-2 text-xs md:text-sm">
+                          {slide.points.map((point) => (
+                            <div key={point} className="rounded-xl bg-white/45 px-3 py-2 font-medium">
+                              {point}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="relative hidden h-full min-h-[220px] overflow-hidden rounded-[1.2rem] md:block">
+                        <img
+                          src={slide.heroImage}
+                          alt={slide.headingTop}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#e98336]/65 via-[#db6f1f]/55 to-[#c75c10]/75" />
+                        <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/20" />
+                        <div className="absolute -left-10 -bottom-10 h-44 w-44 rounded-full bg-white/10" />
+                        <div className="absolute inset-0 flex items-end justify-center p-6">
+                          <div className="rounded-2xl border border-white/30 bg-white/20 px-5 py-3 text-center text-white backdrop-blur">
+                            <p className="text-xs uppercase tracking-wider text-white/80">
+                              {slide.rightLabel}
+                            </p>
+                            <p className="mt-1 text-xl font-extrabold">{slide.rightValue}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4" />
+            <div className="mt-6 flex items-center justify-center gap-2">
+              {heroSlides.map((slide, idx) => (
+                <button
+                  key={`${slide.badge}-indicator`}
+                  type="button"
+                  onClick={() => setActiveHeroSlide(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  className={`h-2.5 rounded-full transition-all ${
+                    idx === activeHeroSlide ? "w-8 bg-accent" : "w-2.5 bg-white/40 hover:bg-white/60"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
 
           <div
@@ -256,23 +308,6 @@ export function HomePage() {
         />
         <div className="mt-10">
           <CategoryGrid />
-        </div>
-      </section>
-
-      <section className="bg-secondary/50 pt-8 md:pt-12 pb-16 md:pb-24">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="mb-10">
-            <SectionHeader
-              eyebrow="Hand-picked"
-              title="Featured Businesses"
-              subtitle="Top-rated, verified businesses our community loves."
-            />
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {featured.map((b, i) => (
-              <BusinessCard key={b.id} b={b} index={i} />
-            ))}
-          </div>
         </div>
       </section>
 
@@ -512,3 +547,4 @@ export function SectionHeader({
     </div>
   );
 }
+

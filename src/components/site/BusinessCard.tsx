@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Star, MapPin, Phone, MessageCircle, BadgeCheck, ArrowRight } from "lucide-react";
+import { Star, MapPin, Phone, BadgeCheck } from "lucide-react";
 import { businessImage, type Business } from "@/data/businesses";
 
 export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) {
@@ -52,7 +52,7 @@ export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) 
           ))}
         </div>
 
-        <div className="mt-5 flex items-center gap-2 pt-4 border-t border-border">
+        <div className="mt-5 flex items-center justify-center gap-3 pt-4 border-t border-border">
           <a
             href={`tel:${b.phone}`}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground hover:bg-gradient-accent hover:text-accent-foreground transition"
@@ -61,20 +61,14 @@ export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) 
             <Phone className="h-4 w-4" />
           </a>
           <a
-            href={`https://wa.me/${b.whatsapp}`}
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${b.name}, ${b.address}`)}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground hover:bg-[#25D366] hover:text-white transition"
-            aria-label="WhatsApp"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition"
+            aria-label="Location"
           >
-            <MessageCircle className="h-4 w-4" />
+            <MapPin className="h-4 w-4" />
           </a>
-          <Link
-            to={`/listings/${b.id}`}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-glow transition"
-          >
-            View <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
         </div>
       </div>
     </div>

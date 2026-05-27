@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, MapPin, Search, User, PlusCircle } from "lucide-react";
+import { Menu, X, Search, User, PlusCircle } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 
 const nav = [
@@ -34,7 +34,7 @@ export function Header() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 md:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Kay Pahije" className="h-10 w-auto md:h-12" />
+          <img src={logo} alt="Kay Pahije" className="h-12 w-auto md:h-14" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">
@@ -58,9 +58,6 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
-          <button className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition">
-            <MapPin className="h-3.5 w-3.5 text-accent" /> Pune
-          </button>
           <Link
             to="/login"
             className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition"
@@ -68,10 +65,10 @@ export function Header() {
             <User className="h-4 w-4" /> Login
           </Link>
           <Link
-            to="/post-business"
+            to="/contact"
             className="inline-flex items-center gap-1.5 rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-soft hover:shadow-glow transition-all hover:-translate-y-0.5"
           >
-            <PlusCircle className="h-4 w-4" /> Post Business
+            <PlusCircle className="h-4 w-4" /> Register your business
           </Link>
         </div>
 
@@ -106,10 +103,10 @@ export function Header() {
                 Login
               </Link>
               <Link
-                to="/post-business"
+                to="/contact"
                 className="rounded-full bg-gradient-accent px-4 py-2 text-center text-sm font-semibold text-accent-foreground"
               >
-                Post Business
+                Register your business
               </Link>
             </div>
           </div>

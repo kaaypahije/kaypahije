@@ -6,12 +6,12 @@ export function FloatingActions() {
 
   return (
     <>
-      <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+      <div className="fixed bottom-4 right-3 md:bottom-6 md:right-6 z-[60] flex flex-col items-end gap-3">
         <a
           href="https://wa.me/919876543210"
           target="_blank"
           rel="noreferrer"
-          className="group inline-flex h-13 w-13 h-13 items-center justify-center rounded-full bg-[#25D366] text-white shadow-glow hover:scale-110 transition-transform"
+          className="group inline-flex items-center justify-center rounded-full bg-[#25D366] text-white shadow-glow hover:scale-110 transition-transform"
           style={{ height: 52, width: 52 }}
           aria-label="WhatsApp"
         >
@@ -36,7 +36,7 @@ export function FloatingActions() {
       </div>
 
       {chatOpen && (
-        <div className="fixed bottom-5 right-5 z-50 w-[calc(100vw-2.5rem)] max-w-sm rounded-3xl bg-card shadow-glow border border-border overflow-hidden animate-fade-up">
+        <div className="fixed bottom-4 right-3 md:bottom-6 md:right-6 z-[70] w-[calc(100vw-1.5rem)] md:w-[calc(100vw-2.5rem)] max-w-sm rounded-3xl bg-card shadow-glow border border-border overflow-hidden animate-fade-up">
           <div className="bg-gradient-hero p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-white/15 grid place-items-center">
