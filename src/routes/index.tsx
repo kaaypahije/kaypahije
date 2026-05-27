@@ -307,7 +307,15 @@ export function HomePage() {
           subtitle="From a quick coffee to a wedding planner - explore everything your city has to offer."
         />
         <div className="mt-10">
-          <CategoryGrid />
+          <CategoryGrid limit={8} mode="home" />
+        </div>
+        <div className="mt-8 flex justify-center">
+          <Link
+            to="/categories"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-soft hover:shadow-glow transition-all"
+          >
+            Explore More <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 

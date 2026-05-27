@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Star, MapPin, Phone, BadgeCheck } from "lucide-react";
+import { MapPin, Phone, BadgeCheck } from "lucide-react";
 import { businessImage, type Business } from "@/data/businesses";
 
 export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) {
@@ -15,11 +15,7 @@ export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) 
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/95 backdrop-blur px-2.5 py-1 text-xs font-bold text-foreground shadow">
-            <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> {b.rating}
-            <span className="text-muted-foreground font-normal">({b.reviews})</span>
-          </span>
+        <div className="absolute inset-x-0 top-0 flex items-start justify-end p-3">
           {b.verified && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground shadow">
               <BadgeCheck className="h-3 w-3" /> Verified

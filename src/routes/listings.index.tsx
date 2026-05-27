@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, MapPin, SlidersHorizontal, Star } from "lucide-react";
+import { Search, MapPin, SlidersHorizontal } from "lucide-react";
 import { businesses, cities, categories } from "@/data/businesses";
 import { BusinessCard } from "@/components/site/BusinessCard";
 
@@ -9,7 +9,6 @@ export function ListingsPage() {
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [city, setCity] = useState(searchParams.get("city") ?? "");
   const [category, setCategory] = useState(searchParams.get("category") ?? "");
-  const [minRating, setMinRating] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
 
   const filtered = useMemo(() => {
@@ -23,10 +22,9 @@ export function ListingsPage() {
         return false;
       if (city && b.city !== city) return false;
       if (category && b.category !== category) return false;
-      if (b.rating < minRating) return false;
       return true;
     });
-  }, [q, city, category, minRating]);
+  }, [q, city, category]);
 
   return (
     <>
@@ -88,26 +86,6 @@ export function ListingsPage() {
                     className={`w-full text-left rounded-lg px-3 py-1.5 text-sm ${category === c.name ? "bg-accent/10 text-accent font-semibold" : "hover:bg-secondary"}`}
                   >
                     {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-2xl bg-card border border-border p-5">
-              <h3 className="font-bold mb-3">Minimum Rating</h3>
-              <div className="space-y-1.5">
-                {[0, 3, 4, 4.5].map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => setMinRating(r)}
-                    className={`w-full text-left rounded-lg px-3 py-1.5 text-sm inline-flex items-center gap-1.5 ${minRating === r ? "bg-accent/10 text-accent font-semibold" : "hover:bg-secondary"}`}
-                  >
-                    {r === 0 ? (
-                      "Any"
-                    ) : (
-                      <>
-                        <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" /> {r}+
-                      </>
-                    )}
                   </button>
                 ))}
               </div>
