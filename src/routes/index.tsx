@@ -9,7 +9,6 @@ import {
   Sparkles,
   ArrowRight,
   Quote,
-  Smartphone,
   ChevronDown,
   Shield,
   Zap,
@@ -18,7 +17,7 @@ import {
 import { useEffect, useState } from "react";
 import { BusinessCard } from "@/components/site/BusinessCard";
 import { CategoryGrid } from "@/components/site/CategoryGrid";
-import { businesses, cities, trendingSearches } from "@/data/businesses";
+import { businesses, cities, trendingSearches, type Business } from "@/data/businesses";
 
 const stats = [
   { value: "1M+", label: "Businesses Listed", icon: BadgeCheck },
@@ -91,6 +90,73 @@ const faqs = [
   {
     q: "How do I report a wrong listing?",
     a: "Every business detail page has a 'Report' option. Our moderation team responds within 12 hours.",
+  },
+];
+
+const yashaswiniMartCards: Business[] = [
+  {
+    id: "ym-fresh-groceries",
+    name: "Green Basket Supermarket",
+    category: "Supermarket",
+    city: "Pune",
+    address: "Karve Nagar, Pune",
+    rating: 4.8,
+    reviews: 0,
+    phone: "+919812340101",
+    whatsapp: "919812340101",
+    image: "photo-1542838132-92c53300491e",
+    description: "Fresh produce, dairy, staples, and household needs with quick doorstep delivery.",
+    tags: ["Fresh Produce", "Daily Essentials", "Delivery"],
+    verified: true,
+    featured: true,
+  },
+  {
+    id: "ym-home-kitchen",
+    name: "Urban Home Needs",
+    category: "Home Essentials",
+    city: "Pune",
+    address: "Kothrud, Pune",
+    rating: 4.5,
+    reviews: 0,
+    phone: "+919812340102",
+    whatsapp: "919812340102",
+    image: "photo-1556911220-bff31c812dba",
+    description: "Kitchen tools, storage jars, cleaning supplies, and daily utility products.",
+    tags: ["Kitchenware", "Storage", "Cleaning"],
+    verified: true,
+    featured: true,
+  },
+  {
+    id: "ym-snacks-beverages",
+    name: "Snack Street Foods",
+    category: "Snacks & Beverages",
+    city: "Pune",
+    address: "Erandwane, Pune",
+    rating: 4.7,
+    reviews: 0,
+    phone: "+919812340103",
+    whatsapp: "919812340103",
+    image: "photo-1499636136210-6f4ee915583e",
+    description: "Cookies, namkeen, juices, cold drinks, and ready-to-eat family packs.",
+    tags: ["Quick Bites", "Cold Drinks", "Family Packs"],
+    verified: true,
+    featured: true,
+  },
+  {
+    id: "ym-personal-care",
+    name: "GlowCare Beauty & Wellness",
+    category: "Personal Care",
+    city: "Pune",
+    address: "Deccan, Pune",
+    rating: 4.7,
+    reviews: 0,
+    phone: "+919812340104",
+    whatsapp: "919812340104",
+    image: "photo-1522335789203-aabd1fc54bc9",
+    description: "Skincare, grooming, hygiene, and wellness essentials from trusted brands.",
+    tags: ["Skincare", "Grooming", "Wellness"],
+    verified: true,
+    featured: true,
   },
 ];
 
@@ -300,7 +366,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 md:px-6 py-16 md:py-24">
+      <section className="mx-auto max-w-7xl px-4 md:px-6 pt-16 md:pt-24 pb-8 md:pb-10">
         <SectionHeader
           eyebrow="Explore"
           title="Browse by Category"
@@ -319,7 +385,18 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 md:px-6 py-16 md:py-24">
+      <section className="mx-auto max-w-7xl px-4 md:px-6 pt-4 md:pt-6 pb-12 md:pb-16">
+        <h2 className="text-center text-3xl md:text-4xl lg:text-5xl font-extrabold text-foreground">
+          Yashaswini Mart
+        </h2>
+        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {yashaswiniMartCards.map((b, i) => (
+            <BusinessCard key={b.id} b={b} index={i} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 md:px-6 pt-8 md:pt-10 pb-16 md:pb-24">
         <SectionHeader
           eyebrow="Popular near you"
           title="Trending in Your City"
@@ -415,54 +492,6 @@ export function HomePage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 md:px-6 py-16 md:py-24">
-        <div className="relative overflow-hidden rounded-4xl bg-gradient-hero p-8 md:p-14 text-primary-foreground">
-          <div className="absolute -right-10 -bottom-10 h-72 w-72 rounded-full bg-accent/30 blur-3xl" />
-          <div className="relative grid md:grid-cols-2 gap-10 items-center">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3 py-1 text-xs font-medium border border-white/20">
-                <Smartphone className="h-3.5 w-3.5" /> Coming Soon
-              </span>
-              <h2 className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight">
-                Get the Kay Pahije app.
-                <br />
-                <span className="text-gradient-accent">Your city in your pocket.</span>
-              </h2>
-              <p className="mt-4 text-white/75 max-w-md">
-                Faster search, offline favorites, exclusive offers and personalized recommendations.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <button className="inline-flex items-center gap-2 rounded-2xl bg-white text-primary px-5 py-3 font-semibold shadow-soft">
-                  <Smartphone className="h-5 w-5" /> Google Play
-                </button>
-                <button className="inline-flex items-center gap-2 rounded-2xl bg-white text-primary px-5 py-3 font-semibold shadow-soft">
-                  <Smartphone className="h-5 w-5" /> App Store
-                </button>
-              </div>
-            </div>
-            <div className="hidden md:flex justify-center">
-              <div className="relative animate-float">
-                <div className="h-80 w-44 rounded-[2.5rem] bg-gradient-to-b from-white/20 to-white/5 backdrop-blur border border-white/20 p-2 shadow-glow">
-                  <div className="h-full w-full rounded-[2rem] bg-gradient-to-b from-card to-secondary p-4 overflow-hidden">
-                    <div className="h-2 w-12 rounded-full bg-muted mx-auto" />
-                    <div className="mt-4 h-24 rounded-2xl bg-gradient-accent shadow-soft" />
-                    <div className="mt-3 space-y-2">
-                      <div className="h-3 rounded bg-muted" />
-                      <div className="h-3 w-2/3 rounded bg-muted" />
-                    </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="aspect-square rounded-xl bg-muted" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, Globe, Camera, MessageSquare, Video } from "lucide-react";
 
 const socials = [Globe, Camera, MessageSquare, Video];
@@ -27,37 +27,36 @@ const links = {
 
 export function Footer() {
   return (
-    <footer className="relative mt-24 bg-primary text-primary-foreground">
+    <footer className="relative mt-4 bg-primary text-primary-foreground">
       <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
-      <div className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
-          <div className="lg:col-span-2 space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-2xl bg-white p-3 shadow-soft">
-              <img src={logo} alt="Kay Pahije" className="h-12 w-auto" />
+      <div className="mx-auto max-w-7xl px-4 py-5 md:px-6 md:py-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="lg:col-span-2 space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-xl bg-white p-2 shadow-soft">
+              <img src={logo} alt="Kay Pahije" className="h-8 w-auto" />
             </div>
-            <p className="max-w-sm text-sm text-primary-foreground/70 leading-relaxed">
-              India's modern business listing platform. Discover, connect and grow with verified
-              local businesses in your city.
+            <p className="max-w-[22rem] text-xs md:text-sm text-primary-foreground/70 leading-relaxed">
+              Discover trusted local businesses near you, all in one place.
             </p>
-            <div className="space-y-2 text-sm text-primary-foreground/80">
-              <p className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-accent" /> Pune, Maharashtra, India
+            <div className="space-y-0.5 text-xs md:text-sm text-primary-foreground/80">
+              <p className="flex items-center gap-2 leading-6">
+                <MapPin className="h-3.5 w-3.5 text-accent" /> Pune, Maharashtra, India
               </p>
-              <p className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-accent" /> +91 98765 43210
+              <p className="flex items-center gap-2 leading-6">
+                <Phone className="h-3.5 w-3.5 text-accent" /> +91 98765 43210
               </p>
-              <p className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-accent" /> hello@kaypahije.com
+              <p className="flex items-center gap-2 leading-6">
+                <Mail className="h-3.5 w-3.5 text-accent" /> hello@kaypahije.com
               </p>
             </div>
-            <div className="flex gap-3">
-              {socials.map((Icon, i) => (
+            <div className="flex gap-1.5 pt-1">
+              {socials.slice(0, 3).map((Icon, i) => (
                 <a
                   key={i}
                   href="#"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-accent transition-colors"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 hover:bg-accent transition-colors"
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3 w-3" />
                 </a>
               ))}
             </div>
@@ -65,15 +64,15 @@ export function Footer() {
 
           {Object.entries(links).map(([title, items]) => (
             <div key={title}>
-              <h4 className="text-sm font-semibold uppercase tracking-wider text-accent mb-4">
+              <h4 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-accent mb-2">
                 {title}
               </h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-1">
                 {items.map((l) => (
                   <li key={l.label}>
                     <Link
                       to={l.to}
-                      className="text-sm text-primary-foreground/70 hover:text-accent transition-colors"
+                      className="text-xs md:text-sm text-primary-foreground/70 hover:text-accent transition-colors"
                     >
                       {l.label}
                     </Link>
@@ -84,11 +83,10 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 flex items-center justify-center border-t border-white/10 pt-6 text-xs text-primary-foreground/60">
-          <p>© {new Date().getFullYear()} Kay Pahije. All rights reserved.</p>        </div>
+        <div className="mt-4 flex items-center justify-center border-t border-white/10 pt-2.5 text-[11px] md:text-xs text-primary-foreground/60">
+          <p>&copy; {new Date().getFullYear()} Kay Pahije. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );
 }
-
-

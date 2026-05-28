@@ -11,6 +11,7 @@ export type Business = {
   image: string;
   description: string;
   tags: string[];
+  imageLink?: string;
   verified?: boolean;
   featured?: boolean;
 };
@@ -19,34 +20,37 @@ const img = (id: number) => `https://images.unsplash.com/${id}?auto=format&fit=c
 
 export const businesses: Business[] = [
   {
-    id: "spice-garden",
+    id: "ananya-hospital",
+    name: "Ananya Cardiac & Multispeciality Hospital",
+    category: "Hospitals",
+    city: "Parbhani",
+    address: "Station Road, Hedgewar Marg, Doctor Lane, Parbhani - 431401",
+    rating: 4.7,
+    reviews: 892,
+    phone: "+919096290703",
+    whatsapp: "919096290703",
+    image: "photo-1519494026892-80bbd2d6fd0d",
+    description:
+      "I.C.U. and 24x7 emergency services with advanced cardiac diagnosis, treatment, stroke and neuro care.",
+    tags: ["I.C.U.", "24x7 Emergency", "Cardiac Care"],
+    imageLink:
+      "https://www.google.com/maps/place/Ananya+Hospital/@19.2606786,76.7704278,17z/data=!4m6!3m5!1s0x3bd0196be586c43b:0x3d77fcb387e0ee16!8m2!3d19.2606786!4d76.7730027!16s%2Fg%2F11j2chf39_?entry=ttu&g_ep=EgoreyMDI2MDEyOC4wIKXMDSoKLDEwMDc5MjA3MUgBUAM%3D",
+    verified: true,
+    featured: true,
+  },
+  {
+    id: "city-hospital",
     name: "Spice Garden Restaurant",
     category: "Restaurants",
     city: "Pune",
     address: "FC Road, Shivajinagar, Pune",
     rating: 4.6,
     reviews: 1284,
-    phone: "+919876543210",
-    whatsapp: "919876543210",
+    phone: "+919876543211",
+    whatsapp: "919876543211",
     image: "photo-1517248135467-4c7edcad34c4",
     description: "Authentic Maharashtrian and North Indian cuisine in a warm modern setting.",
     tags: ["Family", "Veg & Non-Veg", "AC"],
-    verified: true,
-    featured: true,
-  },
-  {
-    id: "city-hospital",
-    name: "CityCare Multi-Speciality Hospital",
-    category: "Hospitals",
-    city: "Mumbai",
-    address: "Andheri West, Mumbai",
-    rating: 4.8,
-    reviews: 2156,
-    phone: "+919876543211",
-    whatsapp: "919876543211",
-    image: "photo-1519494026892-80bbd2d6fd0d",
-    description: "24x7 emergency, cardiology, orthopedics & maternity care.",
-    tags: ["24x7", "Insurance", "Pharmacy"],
     verified: true,
     featured: true,
   },

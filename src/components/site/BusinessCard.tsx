@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { MapPin, Phone, BadgeCheck } from "lucide-react";
 import { businessImage, type Business } from "@/data/businesses";
 
@@ -9,12 +8,23 @@ export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) 
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={businessImage(b)}
-          alt={b.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
+        {b.imageLink ? (
+          <a href={b.imageLink} target="_blank" rel="noreferrer" aria-label={`${b.name} map page`}>
+            <img
+              src={businessImage(b)}
+              alt={b.name}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          </a>
+        ) : (
+          <img
+            src={businessImage(b)}
+            alt={b.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        )}
         <div className="absolute inset-x-0 top-0 flex items-start justify-end p-3">
           {b.verified && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground shadow">
@@ -31,12 +41,12 @@ export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) 
 
       <div className="flex flex-1 flex-col p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-accent">{b.category}</p>
-        <h3 className="mt-1 text-lg font-bold text-foreground line-clamp-1">{b.name}</h3>
-        <p className="mt-1 flex items-start gap-1 text-sm text-muted-foreground line-clamp-1">
+        <h3 className="mt-1 text-lg font-bold leading-snug text-foreground line-clamp-2 min-h-[3.5rem]">
+          {b.name}
+        </h3>
+        <p className="mt-1 flex items-start gap-1 text-sm text-muted-foreground line-clamp-2 min-h-[2.75rem]">
           <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-accent" /> {b.address}
         </p>
-        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{b.description}</p>
-
         <div className="mt-4 flex flex-wrap gap-1.5">
           {b.tags.slice(0, 3).map((t) => (
             <span
