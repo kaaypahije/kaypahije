@@ -20,10 +20,8 @@ import { CategoryGrid } from "@/components/site/CategoryGrid";
 import { businesses, cities, trendingSearches, type Business } from "@/data/businesses";
 
 const stats = [
-  { value: "1M+", label: "Businesses Listed", icon: BadgeCheck },
-  { value: "500+", label: "Cities Covered", icon: MapPin },
-  { value: "10M+", label: "Happy Users", icon: Users },
-  { value: "4.8", label: "User Rating", icon: Star },
+  { value: "35,000", label: "Happy Users", icon: Users },
+  { value: "1,000+", label: "Total Listings", icon: BadgeCheck },
 ];
 
 const features = [
@@ -348,14 +346,14 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
             {stats.map((s, i) => (
               <div
                 key={s.label}
-                className="glass rounded-2xl p-4 text-center animate-fade-up"
+                className="group glass rounded-2xl p-4 text-center animate-fade-up transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-glow"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
-                <s.icon className="h-5 w-5 text-accent mx-auto" />
+                <s.icon className="h-5 w-5 text-accent mx-auto transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110" />
                 <p className="mt-2 text-2xl md:text-3xl font-extrabold text-foreground">
                   {s.value}
                 </p>
