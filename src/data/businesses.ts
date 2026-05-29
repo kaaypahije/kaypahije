@@ -203,6 +203,8 @@ export const categories = [
   { name: "Event Management", icon: "PartyPopper", color: "from-purple-500 to-fuchsia-500" },
   { name: "Digital Marketing", icon: "Megaphone", color: "from-cyan-500 to-blue-600" },
   { name: "Travel & Tourism", icon: "Plane", color: "from-teal-500 to-emerald-600" },
+  { name: "Vivah Services", icon: "Flower2", color: "from-rose-500 to-orange-400" },
+  { name: "Construction Services", icon: "Building2", color: "from-amber-500 to-red-500" },
 ];
 
 export const cities = [
