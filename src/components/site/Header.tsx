@@ -59,10 +59,10 @@ export function Header() {
 
         <div className="hidden md:flex items-center gap-2">
           <Link
-            to="/login"
+            to="/admin/login"
             className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition"
           >
-            <User className="h-4 w-4" /> Login
+            <User className="h-4 w-4" /> Admin Login
           </Link>
           <Link
             to="/contact"
@@ -97,10 +97,10 @@ export function Header() {
             ))}
             <div className="grid grid-cols-2 gap-2 pt-2">
               <Link
-                to="/login"
+                to="/admin/login"
                 className="rounded-full border border-border px-4 py-2 text-center text-sm font-medium"
               >
-                Login
+                Admin Login
               </Link>
               <Link
                 to="/contact"

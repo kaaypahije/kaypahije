@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
@@ -15,6 +15,13 @@ import { LoginPage } from "@/routes/login";
 import { PostBusinessPage } from "@/routes/post-business";
 import { PrivacyPage } from "@/routes/privacy";
 import { TermsPage } from "@/routes/terms";
+import { AdminProtectedRoute } from "@/admin/routes/AdminProtectedRoute";
+import { AdminLayout } from "@/admin/layout/AdminLayout";
+import { AdminLoginPage } from "@/admin/pages/AdminLoginPage";
+import { AdminDashboardPage } from "@/admin/pages/AdminDashboardPage";
+import { AdminCategoriesPage } from "@/admin/pages/AdminCategoriesPage";
+import { AdminSubcategoriesPage } from "@/admin/pages/AdminSubcategoriesPage";
+import { AdminBusinessesPage } from "@/admin/pages/AdminBusinessesPage";
 
 function NotFoundPage() {
   return (
@@ -48,7 +55,7 @@ function ScrollToTop() {
 
 function AppShell() {
   const { pathname } = useLocation();
-  const hideChrome = pathname === "/login";
+  const hideChrome = pathname === "/login" || pathname.startsWith("/admin");
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -56,6 +63,21 @@ function AppShell() {
       {!hideChrome && <Header />}
       <main className="flex-1">
         <Routes>
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminProtectedRoute>
+                <AdminLayout />
+              </AdminProtectedRoute>
+            }
+          >
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="categories" element={<AdminCategoriesPage />} />
+            <Route path="subcategories" element={<AdminSubcategoriesPage />} />
+            <Route path="businesses" element={<AdminBusinessesPage />} />
+          </Route>
+          <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />

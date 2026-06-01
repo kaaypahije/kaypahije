@@ -17,7 +17,15 @@ import {
 import { useEffect, useState } from "react";
 import { BusinessCard } from "@/components/site/BusinessCard";
 import { CategoryGrid } from "@/components/site/CategoryGrid";
-import { businesses, cities, trendingSearches, type Business } from "@/data/businesses";
+import {
+  cities,
+  legacyBusinesses,
+  mapApiBusinessToSite,
+  trendingSearches,
+  type Business,
+  yashaswiniMartCards,
+} from "@/data/businesses";
+import { fetchBusinesses, fetchFeaturedBusinesses } from "@/services/api";
 
 const stats = [
   { value: "35,000", label: "Happy Users", icon: Users },
@@ -91,73 +99,6 @@ const faqs = [
   },
 ];
 
-const yashaswiniMartCards: Business[] = [
-  {
-    id: "ym-fresh-groceries",
-    name: "Green Basket Supermarket",
-    category: "Supermarket",
-    city: "Pune",
-    address: "Karve Nagar, Pune",
-    rating: 4.8,
-    reviews: 0,
-    phone: "+919812340101",
-    whatsapp: "919812340101",
-    image: "photo-1542838132-92c53300491e",
-    description: "Fresh produce, dairy, staples, and household needs with quick doorstep delivery.",
-    tags: ["Fresh Produce", "Daily Essentials", "Delivery"],
-    verified: true,
-    featured: true,
-  },
-  {
-    id: "ym-home-kitchen",
-    name: "Urban Home Needs",
-    category: "Home Essentials",
-    city: "Pune",
-    address: "Kothrud, Pune",
-    rating: 4.5,
-    reviews: 0,
-    phone: "+919812340102",
-    whatsapp: "919812340102",
-    image: "photo-1556911220-bff31c812dba",
-    description: "Kitchen tools, storage jars, cleaning supplies, and daily utility products.",
-    tags: ["Kitchenware", "Storage", "Cleaning"],
-    verified: true,
-    featured: true,
-  },
-  {
-    id: "ym-snacks-beverages",
-    name: "Snack Street Foods",
-    category: "Snacks & Beverages",
-    city: "Pune",
-    address: "Erandwane, Pune",
-    rating: 4.7,
-    reviews: 0,
-    phone: "+919812340103",
-    whatsapp: "919812340103",
-    image: "photo-1499636136210-6f4ee915583e",
-    description: "Cookies, namkeen, juices, cold drinks, and ready-to-eat family packs.",
-    tags: ["Quick Bites", "Cold Drinks", "Family Packs"],
-    verified: true,
-    featured: true,
-  },
-  {
-    id: "ym-personal-care",
-    name: "GlowCare Beauty & Wellness",
-    category: "Personal Care",
-    city: "Pune",
-    address: "Deccan, Pune",
-    rating: 4.7,
-    reviews: 0,
-    phone: "+919812340104",
-    whatsapp: "919812340104",
-    image: "photo-1522335789203-aabd1fc54bc9",
-    description: "Skincare, grooming, hygiene, and wellness essentials from trusted brands.",
-    tags: ["Skincare", "Grooming", "Wellness"],
-    verified: true,
-    featured: true,
-  },
-];
-
 function listingsUrl(params: { q?: string; city?: string }) {
   const search = new URLSearchParams();
   if (params.q) search.set("q", params.q);
@@ -171,6 +112,9 @@ export function HomePage() {
   const [city, setCity] = useState("Pune");
   const [query, setQuery] = useState("");
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
+  const [featuredCards, setFeaturedCards] = useState<Business[]>(legacyBusinesses.filter((item) => item.featured));
+  const [popularCards, setPopularCards] = useState<Business[]>(legacyBusinesses.slice(0, 8));
+  const [listingsLoading, setListingsLoading] = useState(true);
 
   const heroSlides = [
     {
@@ -207,7 +151,62 @@ export function HomePage() {
     return () => clearInterval(timer);
   }, [heroSlides.length]);
 
-  const popular = businesses.slice(0, 8);
+  useEffect(() => {
+    let active = true;
+
+    async function loadListings() {
+      try {
+        setListingsLoading(true);
+        const [featuredResponse, recentResponse] = await Promise.all([
+          fetchFeaturedBusinesses(8),
+          fetchBusinesses({ page: 1, limit: 12, status: "active" }),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        const apiFeatured = featuredResponse.data.map(mapApiBusinessToSite);
+        const apiPopular = recentResponse.data.map(mapApiBusinessToSite);
+
+        const featuredMerged = [...apiFeatured];
+        const featuredExisting = new Set(apiFeatured.map((item) => item.slug));
+        for (const item of legacyBusinesses.filter((entry) => entry.featured)) {
+          if (!featuredExisting.has(item.slug)) {
+            featuredMerged.push(item);
+            featuredExisting.add(item.slug);
+          }
+        }
+
+        const popularMerged = [...apiPopular];
+        const popularExisting = new Set(apiPopular.map((item) => item.slug));
+        for (const item of legacyBusinesses) {
+          if (!popularExisting.has(item.slug)) {
+            popularMerged.push(item);
+            popularExisting.add(item.slug);
+          }
+        }
+
+        setFeaturedCards(featuredMerged.slice(0, 8));
+        setPopularCards(popularMerged.slice(0, 8));
+      } catch (_error) {
+        if (active) {
+          setFeaturedCards(legacyBusinesses.filter((item) => item.featured).slice(0, 8));
+          setPopularCards(legacyBusinesses.slice(0, 8));
+        }
+      } finally {
+        if (active) {
+          setListingsLoading(false);
+        }
+      }
+    }
+
+    loadListings();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <>
@@ -394,6 +393,25 @@ export function HomePage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-4 md:px-6 pt-4 md:pt-2 pb-12 md:pb-16">
+        <h2 className="text-center text-3xl md:text-4xl lg:text-5xl font-extrabold text-foreground">
+          Featured Listings
+        </h2>
+        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {listingsLoading ? (
+            <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              Loading featured listings...
+            </div>
+          ) : featuredCards.length > 0 ? (
+            featuredCards.map((b, i) => <BusinessCard key={b.id} b={b} index={i} />)
+          ) : (
+            <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              No featured listings available yet.
+            </div>
+          )}
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-4 md:px-6 pt-8 md:pt-10 pb-16 md:pb-24">
         <SectionHeader
           eyebrow="Popular near you"
@@ -401,9 +419,17 @@ export function HomePage() {
           subtitle="What people are searching for right now."
         />
         <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {popular.map((b, i) => (
-            <BusinessCard key={b.id} b={b} index={i} />
-          ))}
+          {listingsLoading ? (
+            <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              Loading trending listings...
+            </div>
+          ) : popularCards.length > 0 ? (
+            popularCards.map((b, i) => <BusinessCard key={b.id} b={b} index={i} />)
+          ) : (
+            <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              No listings found right now.
+            </div>
+          )}
         </div>
       </section>
 

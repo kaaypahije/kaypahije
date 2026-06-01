@@ -11,8 +11,33 @@ import {
   ArrowLeft,
   Send,
 } from "lucide-react";
-import { businesses, businessImage } from "@/data/businesses";
+import { useEffect, useMemo, useState } from "react";
 import { BusinessCard } from "@/components/site/BusinessCard";
+import { fetchBusinessById, fetchBusinesses } from "@/services/api";
+import type { Business as ApiBusiness } from "@/types/directory";
+import { mapApiBusinessToSite } from "@/data/businesses";
+import { getApiBaseUrl } from "@/services/http";
+
+const API_BASE = getApiBaseUrl();
+
+function resolveImage(path?: string | null) {
+  if (!path) {
+    return "";
+  }
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  return `${API_BASE}${path}`;
+}
+
+function primaryImage(business: ApiBusiness) {
+  return (
+    resolveImage(business.banner) ||
+    resolveImage(business.logo) ||
+    resolveImage(business.gallery?.[0]?.image) ||
+    "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=70"
+  );
+}
 
 function BusinessNotFound() {
   return (
@@ -30,23 +55,84 @@ function BusinessNotFound() {
 
 export function ListingDetailPage() {
   const { id } = useParams();
-  const b = businesses.find((x) => x.id === id);
+  const [business, setBusiness] = useState<ApiBusiness | null>(null);
+  const [related, setRelated] = useState<ApiBusiness[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!b) return <BusinessNotFound />;
+  useEffect(() => {
+    let active = true;
 
-  const related = businesses.filter((x) => x.category === b.category && x.id !== b.id).slice(0, 3);
+    async function load() {
+      if (!id) {
+        if (active) {
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await fetchBusinessById(id);
+        if (!active) {
+          return;
+        }
+
+        const selected = response.data;
+        setBusiness(selected);
+
+        const relatedResponse = await fetchBusinesses({
+          page: 1,
+          limit: 12,
+          categoryId: selected.categoryId,
+          status: "active",
+        });
+
+        if (!active) {
+          return;
+        }
+
+        setRelated(relatedResponse.data.filter((item) => item.id !== selected.id).slice(0, 3));
+      } catch (_error) {
+        if (active) {
+          setBusiness(null);
+          setRelated([]);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  const siteBusiness = useMemo(() => (business ? mapApiBusinessToSite(business) : null), [business]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <p className="text-muted-foreground">Loading business details...</p>
+      </div>
+    );
+  }
+
+  if (!business || !siteBusiness) {
+    return <BusinessNotFound />;
+  }
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    name: b.name,
-    image: businessImage(b),
-    address: b.address,
-    telephone: b.phone,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: b.rating,
-      reviewCount: b.reviews,
-    },
+    name: business.businessName,
+    image: primaryImage(business),
+    address: business.address,
+    telephone: business.mobile,
+    url: typeof window !== "undefined" ? window.location.href : undefined,
   };
 
   return (
@@ -71,14 +157,14 @@ export function ListingDetailPage() {
         <div className="grid lg:grid-cols-[1fr_360px] gap-8">
           <div>
             <div className="relative overflow-hidden rounded-3xl aspect-[16/9] shadow-card">
-              <img src={businessImage(b)} alt={b.name} className="h-full w-full object-cover" />
+              <img src={primaryImage(business)} alt={business.businessName} className="h-full w-full object-cover" />
               <div className="absolute top-4 left-4 flex gap-2">
-                {b.verified && (
+                {business.verified && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-gradient-accent px-3 py-1 text-xs font-semibold text-accent-foreground shadow">
                     <BadgeCheck className="h-3.5 w-3.5" /> Verified
                   </span>
                 )}
-                {b.featured && (
+                {business.featured && (
                   <span className="rounded-full bg-primary/90 backdrop-blur px-3 py-1 text-xs font-semibold text-primary-foreground">
                     Featured
                   </span>
@@ -88,25 +174,29 @@ export function ListingDetailPage() {
 
             <div className="mt-8">
               <p className="text-sm font-semibold uppercase tracking-wider text-accent">
-                {b.category}
+                {business.category?.name || "Business"}
               </p>
-              <h1 className="mt-2 text-3xl md:text-4xl font-extrabold">{b.name}</h1>
+              <h1 className="mt-2 text-3xl md:text-4xl font-extrabold">{business.businessName}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 px-3 py-1 font-semibold">
-                  <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> {b.rating}{" "}
-                  <span className="text-muted-foreground font-normal">({b.reviews} reviews)</span>
+                  <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> 4.5
+                  <span className="text-muted-foreground font-normal">(Directory rating)</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-accent" /> {b.address}
+                  <MapPin className="h-4 w-4 text-accent" />
+                  {[business.area, business.city, business.state].filter(Boolean).join(", ")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                  <Clock className="h-4 w-4" /> Open now
+                  <Clock className="h-4 w-4" />
+                  {business.openingTime && business.closingTime
+                    ? `${business.openingTime} - ${business.closingTime}`
+                    : "Hours available"}
                 </span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                {b.tags.map((t: string) => (
-                  <span key={t} className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">
-                    {t}
+                {(business.services || []).map((tag) => (
+                  <span key={tag} className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">
+                    {tag}
                   </span>
                 ))}
               </div>
@@ -115,43 +205,30 @@ export function ListingDetailPage() {
             <div className="mt-8 rounded-3xl bg-card border border-border p-6">
               <h2 className="text-xl font-bold">About</h2>
               <p className="mt-3 text-muted-foreground leading-relaxed">
-                {b.description} We pride ourselves on quality service and customer satisfaction.
-                With years of experience in {b.category.toLowerCase()}, we serve the {b.city}
-                community with care and professionalism.
+                {business.description ||
+                  "This business profile is managed via admin panel and updated dynamically."}
               </p>
             </div>
 
             <div className="mt-6 rounded-3xl bg-card border border-border p-6">
               <h2 className="text-xl font-bold">Location</h2>
               <div className="mt-4 aspect-[16/9] rounded-2xl bg-gradient-to-br from-secondary to-muted grid place-items-center">
-                <div className="text-center">
+                <div className="text-center px-4">
                   <MapPin className="h-10 w-10 text-accent mx-auto" />
-                  <p className="mt-2 font-semibold">{b.address}</p>
-                  <p className="text-xs text-muted-foreground">Google Maps integration</p>
+                  <p className="mt-2 font-semibold">{business.address}</p>
+                  {business.mapLink ? (
+                    <a
+                      href={business.mapLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-block text-sm font-semibold text-accent"
+                    >
+                      Open on Google Maps
+                    </a>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Map link not available</p>
+                  )}
                 </div>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-3xl bg-card border border-border p-6">
-              <h2 className="text-xl font-bold">Reviews</h2>
-              <div className="mt-4 space-y-4">
-                {[
-                  { n: "Aarav P.", t: "Excellent service! Highly recommend.", r: 5 },
-                  { n: "Sneha R.", t: "Quick response and professional team.", r: 5 },
-                  { n: "Vikram T.", t: "Good experience overall, would visit again.", r: 4 },
-                ].map((rv, i) => (
-                  <div key={i} className="rounded-2xl bg-secondary/50 p-4">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold">{rv.n}</p>
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: rv.r }).map((_, j) => (
-                          <Star key={j} className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{rv.t}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -161,13 +238,13 @@ export function ListingDetailPage() {
               <h3 className="font-bold mb-4">Contact this business</h3>
               <div className="space-y-2">
                 <a
-                  href={`tel:${b.phone}`}
+                  href={`tel:${business.mobile}`}
                   className="flex items-center gap-3 rounded-2xl bg-gradient-accent text-accent-foreground p-3 font-semibold shadow-soft hover:shadow-glow transition"
                 >
                   <Phone className="h-5 w-5" /> Call Now
                 </a>
                 <a
-                  href={`https://wa.me/${b.whatsapp}`}
+                  href={`https://wa.me/${business.whatsapp || business.mobile}`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-3 rounded-2xl bg-[#25D366] text-white p-3 font-semibold hover:opacity-90 transition"
@@ -218,8 +295,8 @@ export function ListingDetailPage() {
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <h2 className="text-2xl md:text-3xl font-extrabold">Related Businesses</h2>
             <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {related.map((r, i) => (
-                <BusinessCard key={r.id} b={r} index={i} />
+              {related.map((item, i) => (
+                <BusinessCard key={item.id} b={mapApiBusinessToSite(item)} index={i} />
               ))}
             </div>
           </div>

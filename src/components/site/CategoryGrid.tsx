@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import * as Icons from "lucide-react";
-import { categories } from "@/data/businesses";
+import { useEffect, useState } from "react";
+import { legacyCategories, mapApiCategoryToSite, mergeWithLegacyCategories, type SiteCategory } from "@/data/businesses";
+import { fetchCategories } from "@/services/api";
 
 type IconName = keyof typeof Icons;
 
@@ -15,6 +17,33 @@ export function CategoryGrid({
   onCategoryClick?: (categoryName: string) => void;
   activeCategory?: string;
 }) {
+  const [categories, setCategories] = useState<SiteCategory[]>(legacyCategories);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      try {
+        const response = await fetchCategories({ page: 1, limit: 200, status: "active" });
+        if (!active) {
+          return;
+        }
+        const mapped = response.data.map((category, index) => mapApiCategoryToSite(category, index));
+        setCategories(mergeWithLegacyCategories(mapped));
+      } catch (_error) {
+        if (active) {
+          setCategories(legacyCategories);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const items = limit ? categories.slice(0, limit) : categories;
   const isHome = mode === "home";
   return (
@@ -59,7 +88,7 @@ export function CategoryGrid({
         return (
           <Link
             key={c.name}
-            to={`/listings?category=${encodeURIComponent(c.name)}`}
+            to={`/listings?category=${encodeURIComponent(c.slug)}`}
             className={cardClass}
             style={{ animationDelay: `${i * 30}ms` }}
           >
