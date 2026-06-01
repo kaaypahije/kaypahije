@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
@@ -24,6 +25,27 @@ const links = {
 };
 
 export function Footer() {
+  const [showRadioTooltip, setShowRadioTooltip] = useState(false);
+  const radioTooltipTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (radioTooltipTimerRef.current !== null) {
+        window.clearTimeout(radioTooltipTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showMobileRadioTooltip = () => {
+    setShowRadioTooltip(true);
+    if (radioTooltipTimerRef.current !== null) {
+      window.clearTimeout(radioTooltipTimerRef.current);
+    }
+    radioTooltipTimerRef.current = window.setTimeout(() => {
+      setShowRadioTooltip(false);
+    }, 1400);
+  };
+
   return (
     <footer className="relative mt-4 bg-primary text-primary-foreground">
       <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
@@ -72,6 +94,9 @@ export function Footer() {
                 rel="noreferrer"
                 aria-label="Radio"
                 className="group relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-accent transition-colors"
+                onTouchStart={showMobileRadioTooltip}
+                onFocus={showMobileRadioTooltip}
+                onBlur={() => setShowRadioTooltip(false)}
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
                   <circle cx="12" cy="12" r="1.5" fill="currentColor" />
@@ -83,7 +108,11 @@ export function Footer() {
                     strokeLinecap="round"
                   />
                 </svg>
-                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/85 px-2 py-1 text-[11px] text-white opacity-0 shadow-md transition-opacity duration-200 group-hover:opacity-100">
+                <span
+                  className={`pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/85 px-2 py-1 text-[11px] text-white opacity-0 shadow-md transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100 ${
+                    showRadioTooltip ? "opacity-100" : ""
+                  }`}
+                >
                   Radio Parbhani 90.8
                 </span>
               </a>
