@@ -67,7 +67,9 @@ export function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://liveradios.in/radio-parbhani-90-8.html"
+                target="_blank"
+                rel="noreferrer"
                 aria-label="Radio"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-accent transition-colors"
               >
