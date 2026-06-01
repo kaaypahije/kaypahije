@@ -19,6 +19,7 @@ export function ListingsPage() {
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [city, setCity] = useState(searchParams.get("city") ?? "");
   const [category, setCategory] = useState(searchParams.get("category") ?? "");
+  const [subcategory, setSubcategory] = useState(searchParams.get("subcategory") ?? "");
   const [showFilters, setShowFilters] = useState(false);
   const [categories, setCategories] = useState<SiteCategory[]>(legacyCategories);
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -108,7 +109,7 @@ export function ListingsPage() {
     const normalizedQuery = q.trim().toLowerCase();
     const normalizedCategory = category.trim().toLowerCase();
 
-    return businesses.filter((business) => {
+    const baseFiltered = businesses.filter((business) => {
       if (normalizedQuery) {
         const haystack =
           `${business.name} ${business.description} ${business.category} ${business.tags.join(" ")}`.toLowerCase();
@@ -134,7 +135,16 @@ export function ListingsPage() {
 
       return true;
     });
-  }, [businesses, q, city, category]);
+
+    const sub = subcategory.trim().toLowerCase();
+    if (!sub) return baseFiltered;
+
+    const subFiltered = baseFiltered.filter((business) =>
+      `${business.name} ${business.description} ${business.tags.join(" ")}`.toLowerCase().includes(sub),
+    );
+
+    return subFiltered.length > 0 ? subFiltered : baseFiltered;
+  }, [businesses, q, city, category, subcategory]);
 
   return (
     <>
@@ -184,7 +194,10 @@ export function ListingsPage() {
               <h3 className="font-bold mb-3">Category</h3>
               <div className="space-y-1.5 max-h-72 overflow-y-auto">
                 <button
-                  onClick={() => setCategory("")}
+                  onClick={() => {
+                    setCategory("");
+                    setSubcategory("");
+                  }}
                   className={`w-full text-left rounded-lg px-3 py-1.5 text-sm ${!category ? "bg-accent/10 text-accent font-semibold" : "hover:bg-secondary"}`}
                 >
                   All Categories
@@ -192,7 +205,10 @@ export function ListingsPage() {
                 {categories.map((c) => (
                   <button
                     key={c.slug}
-                    onClick={() => setCategory(c.slug)}
+                    onClick={() => {
+                      setCategory(c.slug);
+                      setSubcategory("");
+                    }}
                     className={`w-full text-left rounded-lg px-3 py-1.5 text-sm ${category === c.slug ? "bg-accent/10 text-accent font-semibold" : "hover:bg-secondary"}`}
                   >
                     {c.name}

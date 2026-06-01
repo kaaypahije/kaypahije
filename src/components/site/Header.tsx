@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, Search, User, PlusCircle } from "lucide-react";
+import { Menu, X, Search, PlusCircle } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 
 const nav = [
@@ -59,12 +59,6 @@ export function Header() {
 
         <div className="hidden md:flex items-center gap-2">
           <Link
-            to="/admin/login"
-            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition"
-          >
-            <User className="h-4 w-4" /> Admin Login
-          </Link>
-          <Link
             to="/contact"
             className="inline-flex items-center gap-1.5 rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-soft hover:shadow-glow transition-all hover:-translate-y-0.5"
           >
@@ -95,13 +89,7 @@ export function Header() {
                 {n.label}
               </Link>
             ))}
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              <Link
-                to="/admin/login"
-                className="rounded-full border border-border px-4 py-2 text-center text-sm font-medium"
-              >
-                Admin Login
-              </Link>
+            <div className="pt-2">
               <Link
                 to="/contact"
                 className="rounded-full bg-gradient-accent px-4 py-2 text-center text-sm font-semibold text-accent-foreground"
