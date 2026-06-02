@@ -52,6 +52,59 @@ const hospitalSubcategories = [
   "Physiotherapy",
 ];
 
+const frontendSubcategoriesByCategory = {
+  Restaurants: [
+    "Fine Dining",
+    "Fast Food",
+    "Veg Restaurant",
+    "Non Veg Restaurant",
+    "Cafe",
+  ],
+  Hotels: [
+    "Luxury Hotels",
+    "Budget Hotels",
+    "Resorts",
+    "Business Hotels",
+    "Family Hotels",
+  ],
+  Hospitals: [
+    "Doctor's",
+    "Multi Speciality",
+    "नेत्र रोग",
+    "बाल रोग तज्ज्ञ",
+    "कान, नाक, घसा",
+    "स्त्री रोग",
+    "हृदय विकार",
+    "मधुमेह",
+    "हाडांचे उपचार",
+    "किडनी विकार",
+    "पोटांचे विकार व मूळव्याध",
+    "दंत रोग",
+    "आयुर्वेद",
+    "होमिओपॅथी",
+    "कॅन्सरचे विकार",
+    "अर्धांगवायू",
+    "त्वचा रोग",
+    "मानसिक रोग",
+    "कॅन्सर रोग",
+    "फिजिओथेरपी",
+  ],
+  Education: ["Schools", "Colleges", "Coaching Classes", "Training Institutes"],
+  Electronics: ["Mobile Stores", "Laptop Stores", "Home Appliances", "Repair Services"],
+  Fashion: ["Mens Wear", "Womens Wear", "Kids Wear", "Boutiques"],
+  Automobiles: ["Car Service", "Bike Service", "Spare Parts", "Accessories"],
+  "Packers & Movers": ["Home Shifting", "Office Relocation", "Local Moving", "Domestic Transport"],
+  "Beauty Salon": ["Hair Services", "Skin Care", "Bridal Makeup", "Spa Services"],
+  "Home Services": ["Plumbing", "Electrical", "Cleaning", "AC Repair"],
+  "Gym & Fitness": ["Gyms", "Yoga Classes", "Personal Training", "CrossFit"],
+  "Interior Designers": ["Home Interior", "Office Interior", "Modular Kitchen", "Furniture Design"],
+  "Event Management": ["Wedding Events", "Corporate Events", "Birthday Events", "Decoration Services"],
+  "Digital Marketing": ["SEO", "Social Media Marketing", "PPC Ads", "Content Marketing"],
+  "Travel & Tourism": ["Tour Packages", "Flight Booking", "Hotel Booking", "Visa Services"],
+  "Vivah Services": ["Marriage Hall", "Catering", "Photography", "Decoration"],
+  "Construction Services": ["Contractors", "Architects", "Renovation", "Material Suppliers"],
+};
+
 const legacyBusinesses = [
   {
     slug: "ananya-hospital",
@@ -399,6 +452,19 @@ async function seedCategoriesAndSubcategories() {
     for (const name of hospitalSubcategories) {
       // eslint-disable-next-line no-await-in-loop
       await getOrCreateSubcategory(hospitals, name);
+    }
+  }
+
+  for (const [categoryName, subcategoryNames] of Object.entries(frontendSubcategoriesByCategory)) {
+    const category = categoryMap.get(categoryName);
+    if (!category) {
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    for (const name of subcategoryNames) {
+      // eslint-disable-next-line no-await-in-loop
+      await getOrCreateSubcategory(category, name);
     }
   }
 

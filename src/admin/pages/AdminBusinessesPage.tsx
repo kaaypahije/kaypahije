@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Pencil, Trash2, ImageIcon, Phone, BadgeCheck, Star } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { Business, Category, Subcategory } from "@/types/directory";
 import {
@@ -9,6 +10,7 @@ import {
   fetchBusinesses,
   fetchCategories,
   fetchSubcategoriesByCategory,
+  seedYashaswiniDefaults,
   updateBusiness,
 } from "@/services/api";
 import { getApiBaseUrl } from "@/services/http";
@@ -17,6 +19,7 @@ import { SectionCard } from "@/admin/components/SectionCard";
 import { TableToolbar } from "@/admin/components/TableToolbar";
 import { PaginationControls } from "@/admin/components/PaginationControls";
 import { AdminModal } from "@/admin/components/AdminModal";
+import { isYashaswiniMartCategoryName } from "@/data/businesses";
 
 type BusinessFormValues = {
   businessName: string;
@@ -50,6 +53,7 @@ type BusinessFormValues = {
 };
 
 const API_BASE = getApiBaseUrl();
+const YASHASWINI_FILTER_VALUE = "__yashaswini__";
 
 function absoluteImage(path: string | null) {
   if (!path) {
@@ -67,6 +71,11 @@ function formatDate(value: string) {
 }
 
 export function AdminBusinessesPage() {
+  const [searchParams] = useSearchParams();
+  const routeSegment = searchParams.get("segment") || "";
+  const isYashaswiniSegment = routeSegment.toLowerCase() === "yashaswini";
+  const previousRouteSegment = useRef(routeSegment);
+  const attemptedAutoImportRef = useRef(false);
   const { token } = useAuth();
   const [rows, setRows] = useState<Business[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -84,6 +93,7 @@ export function AdminBusinessesPage() {
   const [logoPreview, setLogoPreview] = useState("");
   const [bannerPreview, setBannerPreview] = useState("");
   const [removedGalleryIds, setRemovedGalleryIds] = useState<number[]>([]);
+  const [importingDefaults, setImportingDefaults] = useState(false);
 
   const {
     register,
@@ -125,6 +135,24 @@ export function AdminBusinessesPage() {
   const watchedLogo = watch("logo");
   const watchedBanner = watch("banner");
   const watchedCategoryId = watch("categoryId");
+
+  const yashaswiniCategoryIds = useMemo(
+    () =>
+      categories
+        .filter((category) => isYashaswiniMartCategoryName(category.name))
+        .map((category) => category.id),
+    [categories],
+  );
+
+  const isYashaswiniMode =
+    isYashaswiniSegment || categoryFilter === YASHASWINI_FILTER_VALUE;
+
+  const formCategories = useMemo(() => {
+    if (!isYashaswiniMode) {
+      return categories;
+    }
+    return categories.filter((category) => isYashaswiniMartCategoryName(category.name));
+  }, [categories, isYashaswiniMode]);
 
   const logoFilePreview = useMemo(() => {
     const file = watchedLogo?.[0];
@@ -184,15 +212,126 @@ export function AdminBusinessesPage() {
     }
   }
 
+  async function fetchYashaswiniRows(selectedSubcategoryId?: number) {
+    let categoryIds = yashaswiniCategoryIds;
+
+    if (categoryIds.length === 0) {
+      const response = await fetchCategories({ page: 1, limit: 300 });
+      const fetchedCategories = response.data;
+      const matched = fetchedCategories
+        .filter((category) => isYashaswiniMartCategoryName(category.name))
+        .map((category) => category.id);
+
+      if (matched.length > 0) {
+        setCategories(fetchedCategories);
+        categoryIds = matched;
+      }
+    }
+
+    if (categoryIds.length === 0) {
+      return [];
+    }
+
+    const responses = await Promise.all(
+      categoryIds.map((categoryId) =>
+        fetchBusinesses({
+          page: 1,
+          limit: 300,
+          search,
+          status: statusFilter,
+          categoryId,
+          subcategoryId: selectedSubcategoryId,
+        }),
+      ),
+    );
+
+    const mergedMap = new Map<number, Business>();
+    for (const response of responses) {
+      for (const business of response.data) {
+        mergedMap.set(business.id, business);
+      }
+    }
+
+    return Array.from(mergedMap.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }
+
+  async function importDefaultYashaswiniBusinesses(showToast = true) {
+    if (!token) {
+      return false;
+    }
+
+    try {
+      setImportingDefaults(true);
+      const response = await seedYashaswiniDefaults(token);
+      const createdCount = response.data.created.length;
+
+      if (showToast) {
+        if (createdCount > 0) {
+          toast.success(`Imported ${createdCount} default Yashaswini businesses`);
+        } else {
+          toast.success("Default Yashaswini businesses are already present");
+        }
+      }
+
+      return true;
+    } catch (error) {
+      if (showToast) {
+        const message = error instanceof Error ? error.message : "Failed to import defaults";
+        toast.error(message);
+      }
+      return false;
+    } finally {
+      setImportingDefaults(false);
+    }
+  }
+
   async function loadData() {
     try {
       setLoading(true);
+
+      if (isYashaswiniMode) {
+        const pageSize = 10;
+        const selectedSubcategoryId = subcategoryFilter ? Number(subcategoryFilter) : undefined;
+        let mergedRows = await fetchYashaswiniRows(selectedSubcategoryId);
+
+        if (
+          mergedRows.length === 0 &&
+          token &&
+          !attemptedAutoImportRef.current &&
+          !subcategoryFilter
+        ) {
+          attemptedAutoImportRef.current = true;
+          const imported = await importDefaultYashaswiniBusinesses(false);
+          if (imported) {
+            mergedRows = await fetchYashaswiniRows(selectedSubcategoryId);
+          }
+        }
+
+        const total = mergedRows.length;
+        const totalPageCount = Math.max(1, Math.ceil(total / pageSize));
+        const boundedPage = Math.min(page, totalPageCount);
+        const offset = (boundedPage - 1) * pageSize;
+
+        if (boundedPage !== page) {
+          setPage(boundedPage);
+        }
+
+        setRows(mergedRows.slice(offset, offset + pageSize));
+        setTotalPages(totalPageCount);
+        return;
+      }
+
       const response = await fetchBusinesses({
         page,
         limit: 10,
         search,
         status: statusFilter,
-        categoryId: categoryFilter ? Number(categoryFilter) : undefined,
+        categoryId:
+          categoryFilter && categoryFilter !== YASHASWINI_FILTER_VALUE
+            ? Number(categoryFilter)
+            : undefined,
         subcategoryId: subcategoryFilter ? Number(subcategoryFilter) : undefined,
       });
       setRows(response.data);
@@ -210,17 +349,36 @@ export function AdminBusinessesPage() {
   }, []);
 
   useEffect(() => {
-    if (categoryFilter) {
-      loadSubcategories(Number(categoryFilter), "filter");
-    } else {
+    attemptedAutoImportRef.current = false;
+
+    if (isYashaswiniSegment) {
+      setCategoryFilter(YASHASWINI_FILTER_VALUE);
+      setSubcategoryFilter("");
+      setPage(1);
+    } else if (
+      previousRouteSegment.current.toLowerCase() === "yashaswini" &&
+      categoryFilter === YASHASWINI_FILTER_VALUE
+    ) {
+      setCategoryFilter("");
+      setSubcategoryFilter("");
+      setPage(1);
+    }
+
+    previousRouteSegment.current = routeSegment;
+  }, [categoryFilter, isYashaswiniSegment, routeSegment]);
+
+  useEffect(() => {
+    if (!categoryFilter || categoryFilter === YASHASWINI_FILTER_VALUE) {
       setFilterSubcategories([]);
+    } else {
+      loadSubcategories(Number(categoryFilter), "filter");
     }
   }, [categoryFilter]);
 
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, statusFilter, categoryFilter, subcategoryFilter]);
+  }, [page, statusFilter, categoryFilter, subcategoryFilter, isYashaswiniMode, yashaswiniCategoryIds]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -248,7 +406,7 @@ export function AdminBusinessesPage() {
     setRemovedGalleryIds([]);
     setSubcategoryOptions([]);
 
-    const firstCategoryId = categories[0]?.id || 0;
+    const firstCategoryId = formCategories[0]?.id || 0;
     reset({
       businessName: "",
       slug: "",
@@ -437,16 +595,37 @@ export function AdminBusinessesPage() {
   return (
     <>
       <SectionCard
-        title="Business Management"
-        subtitle="Manage directory listings, contact details, images, and listing status"
+        title={isYashaswiniMode ? "Yashaswini Mart Management" : "Business Management"}
+        subtitle={
+          isYashaswiniMode
+            ? "Add, update, and delete Yashaswini Mart listings"
+            : "Manage directory listings, contact details, images, and listing status"
+        }
         action={
-          <button
-            type="button"
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f28a32] to-[#ffb16a] px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
-          >
-            <Plus className="h-4 w-4" /> Add Business
-          </button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {isYashaswiniMode ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  const imported = await importDefaultYashaswiniBusinesses(true);
+                  if (imported) {
+                    await loadData();
+                  }
+                }}
+                disabled={importingDefaults}
+                className="inline-flex items-center gap-2 rounded-xl border border-[#dfe6f4] bg-white px-4 py-2.5 text-sm font-semibold text-[#41527d] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {importingDefaults ? "Importing..." : "Import Default 4"}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f28a32] to-[#ffb16a] px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4" /> Add Business
+            </button>
+          </div>
         }
       >
         <TableToolbar
@@ -461,9 +640,11 @@ export function AdminBusinessesPage() {
                   setSubcategoryFilter("");
                   setPage(1);
                 }}
+                disabled={isYashaswiniSegment}
                 className="rounded-xl border border-[#e3e8f3] bg-white px-3 py-2 text-sm text-[#42527c]"
               >
                 <option value="">All Categories</option>
+                <option value={YASHASWINI_FILTER_VALUE}>Yashaswini Mart</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -675,7 +856,7 @@ export function AdminBusinessesPage() {
                   className="w-full rounded-xl border border-[#e3e8f3] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f39a4f]"
                 >
                   <option value={0}>Select category</option>
-                  {categories.map((category) => (
+                  {formCategories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
@@ -683,6 +864,11 @@ export function AdminBusinessesPage() {
                 </select>
                 {errors.categoryId ? (
                   <p className="mt-1 text-xs text-red-600">{errors.categoryId.message}</p>
+                ) : null}
+                {isYashaswiniMode && formCategories.length === 0 ? (
+                  <p className="mt-1 text-xs text-[#8a96b5]">
+                    Add one of these categories first: Supermarket, Home Essentials, Snacks & Beverages, Personal Care.
+                  </p>
                 ) : null}
               </div>
 

@@ -4,6 +4,7 @@ import {
   ListTree,
   Layers,
   Building2,
+  Store,
   LogOut,
   Menu,
   X,
@@ -16,6 +17,7 @@ const navItems = [
   { to: "/admin/categories", label: "Categories", icon: ListTree },
   { to: "/admin/subcategories", label: "Subcategories", icon: Layers },
   { to: "/admin/businesses", label: "Businesses", icon: Building2 },
+  { to: "/admin/businesses?segment=yashaswini", label: "Yashaswini Mart", icon: Store },
 ];
 
 export function AdminLayout() {

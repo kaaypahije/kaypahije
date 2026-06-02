@@ -1,160 +1,61 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
+import { ImageIcon, X } from "lucide-react";
 import { CategoryGrid } from "@/components/site/CategoryGrid";
-
-type Subcategory = {
-  icon: string;
-  name: string;
-};
-
-const subcategoriesByCategory: Record<string, Subcategory[]> = {
-  Restaurants: [
-    { icon: "🍽️", name: "Fine Dining" },
-    { icon: "🍔", name: "Fast Food" },
-    { icon: "🥗", name: "Veg Restaurant" },
-    { icon: "🍗", name: "Non Veg Restaurant" },
-    { icon: "☕", name: "Cafe" },
-  ],
-  Hotels: [
-    { icon: "🏨", name: "Luxury Hotels" },
-    { icon: "🛏️", name: "Budget Hotels" },
-    { icon: "🏝️", name: "Resorts" },
-    { icon: "💼", name: "Business Hotels" },
-    { icon: "👨‍👩‍👧‍👦", name: "Family Hotels" },
-  ],
-  Hospitals: [
-    { icon: "🧑‍⚕️", name: "Doctor's" },
-    { icon: "🏥", name: "Multi Speciality" },
-    { icon: "👁️", name: "नेत्र रोग" },
-    { icon: "👶", name: "बाल रोग तज्ज्ञ" },
-    { icon: "👂", name: "कान, नाक, घसा" },
-    { icon: "🤰", name: "स्त्री रोग" },
-    { icon: "❤️", name: "हृदय विकार" },
-    { icon: "🩸", name: "मधुमेह" },
-    { icon: "🦴", name: "हाडांचे उपचार" },
-    { icon: "🫘", name: "किडनी विकार" },
-    { icon: "🧻", name: "पोटांचे विकार व मूळव्याध" },
-    { icon: "🦷", name: "दंत रोग" },
-    { icon: "🌿", name: "आयुर्वेद" },
-    { icon: "⚗️", name: "होमिओपॅथी" },
-    { icon: "🔬", name: "कॅन्सरचे विकार" },
-    { icon: "🧠", name: "अर्धांगवायू" },
-    { icon: "🖐️", name: "त्वचा रोग" },
-    { icon: "😶‍🌫️", name: "मानसिक रोग" },
-    { icon: "🎗️", name: "कॅन्सर रोग" },
-    { icon: "🧑‍🦽", name: "फिजिओथेरपी" },
-  ],
-  Education: [
-    { icon: "🏫", name: "Schools" },
-    { icon: "🎓", name: "Colleges" },
-    { icon: "📘", name: "Coaching Classes" },
-    { icon: "🧪", name: "Training Institutes" },
-  ],
-  Electronics: [
-    { icon: "📱", name: "Mobile Stores" },
-    { icon: "💻", name: "Laptop Stores" },
-    { icon: "📺", name: "Home Appliances" },
-    { icon: "🛠️", name: "Repair Services" },
-  ],
-  Fashion: [
-    { icon: "👔", name: "Mens Wear" },
-    { icon: "👗", name: "Womens Wear" },
-    { icon: "🧒", name: "Kids Wear" },
-    { icon: "🛍️", name: "Boutiques" },
-  ],
-  Automobiles: [
-    { icon: "🚗", name: "Car Service" },
-    { icon: "🏍️", name: "Bike Service" },
-    { icon: "⚙️", name: "Spare Parts" },
-    { icon: "🧰", name: "Accessories" },
-  ],
-  "Packers & Movers": [
-    { icon: "🏠", name: "Home Shifting" },
-    { icon: "🏢", name: "Office Relocation" },
-    { icon: "🚚", name: "Local Moving" },
-    { icon: "📦", name: "Domestic Transport" },
-  ],
-  "Beauty Salon": [
-    { icon: "💇", name: "Hair Services" },
-    { icon: "✨", name: "Skin Care" },
-    { icon: "💄", name: "Bridal Makeup" },
-    { icon: "🧖", name: "Spa Services" },
-  ],
-  "Home Services": [
-    { icon: "🚰", name: "Plumbing" },
-    { icon: "💡", name: "Electrical" },
-    { icon: "🧹", name: "Cleaning" },
-    { icon: "❄️", name: "AC Repair" },
-  ],
-  "Gym & Fitness": [
-    { icon: "🏋️", name: "Gyms" },
-    { icon: "🧘", name: "Yoga Classes" },
-    { icon: "🏃", name: "Personal Training" },
-    { icon: "💪", name: "CrossFit" },
-  ],
-  "Interior Designers": [
-    { icon: "🛋️", name: "Home Interior" },
-    { icon: "🏢", name: "Office Interior" },
-    { icon: "🍳", name: "Modular Kitchen" },
-    { icon: "🪑", name: "Furniture Design" },
-  ],
-  "Event Management": [
-    { icon: "💍", name: "Wedding Events" },
-    { icon: "🏢", name: "Corporate Events" },
-    { icon: "🎂", name: "Birthday Events" },
-    { icon: "🎉", name: "Decoration Services" },
-  ],
-  "Digital Marketing": [
-    { icon: "🔎", name: "SEO" },
-    { icon: "📱", name: "Social Media Marketing" },
-    { icon: "📣", name: "PPC Ads" },
-    { icon: "📝", name: "Content Marketing" },
-  ],
-  "Travel & Tourism": [
-    { icon: "🧳", name: "Tour Packages" },
-    { icon: "✈️", name: "Flight Booking" },
-    { icon: "🏨", name: "Hotel Booking" },
-    { icon: "🛂", name: "Visa Services" },
-  ],
-  "Vivah Services": [
-    { icon: "🏛️", name: "Marriage Hall" },
-    { icon: "🍱", name: "Catering" },
-    { icon: "📸", name: "Photography" },
-    { icon: "🎊", name: "Decoration" },
-  ],
-  "Construction Services": [
-    { icon: "👷", name: "Contractors" },
-    { icon: "📐", name: "Architects" },
-    { icon: "🧱", name: "Renovation" },
-    { icon: "🚧", name: "Material Suppliers" },
-  ],
-};
+import { mapApiSubcategoryToSite, type SiteCategory, type SiteSubcategory } from "@/data/businesses";
+import { fetchSubcategoriesByCategory } from "@/services/api";
 
 export function CategoriesPage() {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<SiteCategory | null>(null);
+  const [subcategories, setSubcategories] = useState<SiteSubcategory[]>([]);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
 
-  const handleCategoryClick = (categoryName: string) => {
-    const subcategories = subcategoriesByCategory[categoryName];
-    if (subcategories?.length) {
-      setSelectedCategory(categoryName);
-      return;
-    }
-    navigate(`/listings?category=${encodeURIComponent(categoryName)}`);
+  const closeModal = () => {
+    setSelectedCategory(null);
+    setSubcategories([]);
   };
 
-  const handleSubcategoryClick = (subcategoryName: string) => {
-    if (!selectedCategory) return;
-    setSelectedCategory(null);
+  const handleCategoryClick = async (category: SiteCategory) => {
+    setSelectedCategory(category);
+    setLoadingSubcategories(true);
+    setSubcategories([]);
+
+    try {
+      const response = await fetchSubcategoriesByCategory(category.id);
+      const mapped = response.data.map(mapApiSubcategoryToSite);
+
+      if (mapped.length === 0) {
+        closeModal();
+        navigate(`/listings?category=${encodeURIComponent(category.slug)}`);
+        return;
+      }
+
+      setSubcategories(mapped);
+    } catch (_error) {
+      closeModal();
+      navigate(`/listings?category=${encodeURIComponent(category.slug)}`);
+    } finally {
+      setLoadingSubcategories(false);
+    }
+  };
+
+  const handleSubcategoryClick = (subcategory: SiteSubcategory) => {
+    if (!selectedCategory) {
+      return;
+    }
+
+    closeModal();
     navigate(
-      `/listings?category=${encodeURIComponent(selectedCategory)}&subcategory=${encodeURIComponent(subcategoryName)}`,
+      `/listings?category=${encodeURIComponent(selectedCategory.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}&subcategoryId=${subcategory.id}`,
     );
   };
 
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedCategory(null);
+      if (e.key === "Escape") {
+        closeModal();
+      }
     };
     window.addEventListener("keydown", onEsc);
     return () => window.removeEventListener("keydown", onEsc);
@@ -173,13 +74,13 @@ export function CategoriesPage() {
       </div>
 
       <div className="mt-12">
-        <CategoryGrid onCategoryClick={handleCategoryClick} activeCategory={selectedCategory ?? ""} />
+        <CategoryGrid onCategoryClick={handleCategoryClick} activeCategory={selectedCategory?.slug || ""} />
       </div>
 
       {selectedCategory && (
         <div
           className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm p-4 md:p-6 grid place-items-center"
-          onClick={() => setSelectedCategory(null)}
+          onClick={closeModal}
         >
           <div
             className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-background p-5 md:p-8 shadow-2xl animate-fade-up"
@@ -187,37 +88,51 @@ export function CategoriesPage() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-2xl md:text-3xl font-extrabold">{selectedCategory} Sub Categories</h2>
+                <h2 className="text-2xl md:text-3xl font-extrabold">{selectedCategory.name} Sub Categories</h2>
                 <p className="mt-1 text-sm md:text-base text-muted-foreground">
-                  Choose a suitable sub category under {selectedCategory}.
+                  Choose a suitable sub category under {selectedCategory.name}.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedCategory(null)}
-                aria-label={`Close ${selectedCategory} sub categories`}
+                onClick={closeModal}
+                aria-label={`Close ${selectedCategory.name} sub categories`}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border hover:bg-secondary transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {(subcategoriesByCategory[selectedCategory] ?? []).map((sub, i) => (
-                <button
-                  key={sub.name}
-                  type="button"
-                  onClick={() => handleSubcategoryClick(sub.name)}
-                  className="rounded-2xl bg-card border border-border p-5 animate-fade-up text-center hover:bg-secondary transition-colors"
-                  style={{ animationDelay: `${i * 20}ms` }}
-                >
-                  <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-rose-100 to-orange-100 grid place-items-center text-3xl">
-                    {sub.icon}
-                  </div>
-                  <p className="mt-3 text-sm md:text-base font-semibold leading-snug">{sub.name}</p>
-                </button>
-              ))}
-            </div>
+            {loadingSubcategories ? (
+              <div className="mt-6 rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+                Loading subcategories...
+              </div>
+            ) : subcategories.length === 0 ? (
+              <div className="mt-6 rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+                No subcategories available for this category.
+              </div>
+            ) : (
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {subcategories.map((sub, i) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => handleSubcategoryClick(sub)}
+                    className="rounded-2xl bg-card border border-border p-5 animate-fade-up text-center hover:bg-secondary transition-colors"
+                    style={{ animationDelay: `${i * 20}ms` }}
+                  >
+                    <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-rose-100 to-orange-100 grid place-items-center overflow-hidden">
+                      {sub.image ? (
+                        <img src={sub.image} alt={`${sub.name} icon`} className="h-12 w-12 object-contain" />
+                      ) : (
+                        <ImageIcon className="h-7 w-7 text-rose-500" />
+                      )}
+                    </div>
+                    <p className="mt-3 text-sm md:text-base font-semibold leading-snug">{sub.name}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

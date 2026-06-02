@@ -14,7 +14,7 @@ export function CategoryGrid({
 }: {
   limit?: number;
   mode?: "default" | "home";
-  onCategoryClick?: (categoryName: string) => void;
+  onCategoryClick?: (category: SiteCategory) => void;
   activeCategory?: string;
 }) {
   const [categories, setCategories] = useState<SiteCategory[]>(legacyCategories);
@@ -46,6 +46,32 @@ export function CategoryGrid({
 
   const items = limit ? categories.slice(0, limit) : categories;
   const isHome = mode === "home";
+
+  function renderCategoryIcon(
+    category: SiteCategory,
+    Icon: React.ComponentType<{ className?: string }>,
+  ) {
+    const sizeClass = isHome ? "h-16 w-16" : "h-14 w-14";
+
+    if (category.image) {
+      return (
+        <div
+          className={`${sizeClass} overflow-hidden rounded-2xl bg-white p-2 shadow-soft group-hover:scale-110 transition-transform`}
+        >
+          <img src={category.image} alt={`${category.name} icon`} className="h-full w-full object-contain" />
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`rounded-2xl bg-gradient-to-br ${category.color} grid place-items-center text-white shadow-soft group-hover:scale-110 transition-transform ${sizeClass}`}
+      >
+        <Icon className={isHome ? "h-7 w-7" : "h-6 w-6"} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={
@@ -59,7 +85,9 @@ export function CategoryGrid({
           className?: string;
         }>;
         const cardClass = `group relative flex flex-col items-center justify-center rounded-2xl bg-card border hover-lift animate-fade-up ${
-          activeCategory === c.name ? "border-accent shadow-glow" : "border-border"
+          activeCategory === c.slug || activeCategory === c.name
+            ? "border-accent shadow-glow"
+            : "border-border"
         } ${isHome ? "min-h-[170px] gap-4 p-6" : "gap-3 p-5"}`;
 
         if (onCategoryClick) {
@@ -67,17 +95,11 @@ export function CategoryGrid({
             <button
               key={c.name}
               type="button"
-              onClick={() => onCategoryClick(c.name)}
+              onClick={() => onCategoryClick(c)}
               className={cardClass}
               style={{ animationDelay: `${i * 30}ms` }}
             >
-              <div
-                className={`rounded-2xl bg-gradient-to-br ${c.color} grid place-items-center text-white shadow-soft group-hover:scale-110 transition-transform ${
-                  isHome ? "h-16 w-16" : "h-14 w-14"
-                }`}
-              >
-                <Icon className={isHome ? "h-7 w-7" : "h-6 w-6"} />
-              </div>
+              {renderCategoryIcon(c, Icon)}
               <p className={`text-center text-foreground font-semibold ${isHome ? "text-lg" : "text-sm"}`}>
                 {c.name}
               </p>
@@ -92,13 +114,7 @@ export function CategoryGrid({
             className={cardClass}
             style={{ animationDelay: `${i * 30}ms` }}
           >
-            <div
-              className={`rounded-2xl bg-gradient-to-br ${c.color} grid place-items-center text-white shadow-soft group-hover:scale-110 transition-transform ${
-                isHome ? "h-16 w-16" : "h-14 w-14"
-              }`}
-            >
-              <Icon className={isHome ? "h-7 w-7" : "h-6 w-6"} />
-            </div>
+            {renderCategoryIcon(c, Icon)}
             <p className={`text-center text-foreground font-semibold ${isHome ? "text-lg" : "text-sm"}`}>
               {c.name}
             </p>

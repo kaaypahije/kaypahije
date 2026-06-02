@@ -1,4 +1,8 @@
-import type { Business as ApiBusiness, Category as ApiCategory } from "@/types/directory";
+import type {
+  Business as ApiBusiness,
+  Category as ApiCategory,
+  Subcategory as ApiSubcategory,
+} from "@/types/directory";
 import { getApiBaseUrl } from "@/services/http";
 
 const API_BASE = getApiBaseUrl();
@@ -8,6 +12,9 @@ export type Business = {
   slug: string;
   name: string;
   category: string;
+  subcategory?: string;
+  subcategorySlug?: string;
+  subcategoryId?: number;
   city: string;
   address: string;
   rating: number;
@@ -28,6 +35,16 @@ export type SiteCategory = {
   slug: string;
   icon: string;
   color: string;
+  image?: string | null;
+};
+
+export type SiteSubcategory = {
+  id: number;
+  categoryId: number;
+  name: string;
+  slug: string;
+  image?: string | null;
+  description?: string | null;
 };
 
 const colors = [
@@ -362,6 +379,44 @@ export const yashaswiniMartCards: Business[] = [
   },
 ];
 
+export const yashaswiniMartCategoryNames = [
+  "Supermarket",
+  "Home Essentials",
+  "Snacks & Beverages",
+  "Personal Care",
+];
+
+function normalizeCategoryKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const yashaswiniMartCategoryKeySet = new Set([
+  ...yashaswiniMartCategoryNames.map((name) => normalizeCategoryKey(name)),
+  normalizeCategoryKey("Super Market"),
+]);
+
+export function isYashaswiniMartCategoryName(categoryName: string | null | undefined) {
+  if (!categoryName) {
+    return false;
+  }
+  const normalized = normalizeCategoryKey(categoryName.trim());
+  return yashaswiniMartCategoryKeySet.has(normalized);
+}
+
+export function mergeWithLegacyYashaswiniBusinesses(apiBusinesses: Business[] = []) {
+  const merged = [...apiBusinesses];
+  const existing = new Set(apiBusinesses.map((business) => business.slug));
+
+  for (const business of yashaswiniMartCards) {
+    if (!existing.has(business.slug)) {
+      merged.push(business);
+      existing.add(business.slug);
+    }
+  }
+
+  return merged;
+}
+
 function resolveAssetPath(path: string | null | undefined) {
   if (!path) {
     return "";
@@ -391,6 +446,18 @@ export function mapApiCategoryToSite(category: ApiCategory, index = 0): SiteCate
     slug: category.slug,
     icon: pickIcon(category.name),
     color: colors[index % colors.length],
+    image: resolveAssetPath(category.image) || null,
+  };
+}
+
+export function mapApiSubcategoryToSite(subcategory: ApiSubcategory): SiteSubcategory {
+  return {
+    id: subcategory.id,
+    categoryId: subcategory.categoryId,
+    name: subcategory.name,
+    slug: subcategory.slug,
+    image: resolveAssetPath(subcategory.image) || null,
+    description: subcategory.description || null,
   };
 }
 
@@ -417,6 +484,7 @@ export function mapApiBusinessToSite(business: ApiBusiness): Business {
     "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=70";
 
   const categoryName = business.category?.name || "Business";
+  const subcategoryName = business.subcategory?.name || "";
   const mapLink =
     business.mapLink ||
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${business.businessName}, ${business.address}`)}`;
@@ -426,6 +494,9 @@ export function mapApiBusinessToSite(business: ApiBusiness): Business {
     slug: business.slug,
     name: business.businessName,
     category: categoryName,
+    subcategory: subcategoryName || undefined,
+    subcategorySlug: business.subcategory?.slug || undefined,
+    subcategoryId: business.subcategory?.id || undefined,
     city: business.city,
     address: [business.area, business.city].filter(Boolean).join(", ") || business.address,
     rating: 4.5,

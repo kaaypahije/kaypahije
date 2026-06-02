@@ -6,6 +6,7 @@ import logo from "@/assets/logo.jpeg";
 const nav = [
   { to: "/", label: "Home" },
   { to: "/categories", label: "Categories" },
+  { to: "/yashaswini-mart", label: "Yashaswini Mart" },
   { to: "/listings", label: "Listings" },
   { to: "/blog", label: "Blog" },
   { to: "/about", label: "About" },
