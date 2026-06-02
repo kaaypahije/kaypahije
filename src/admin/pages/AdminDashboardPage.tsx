@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -135,6 +136,26 @@ export function AdminDashboardPage() {
           </div>
         ))}
       </div>
+
+      <SectionCard
+        title="Yashaswini Mart Controls"
+        subtitle="Manage Yashaswini Mart listings from admin"
+      >
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to="/admin/businesses?segment=yashaswini"
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#f28a32] to-[#ffb16a] px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            Open Yashaswini Mart Management
+          </Link>
+          <Link
+            to="/yashaswini-mart"
+            className="inline-flex items-center rounded-xl border border-[#dfe6f4] bg-white px-4 py-2.5 text-sm font-semibold text-[#41527d]"
+          >
+            View Frontend Yashaswini Page
+          </Link>
+        </div>
+      </SectionCard>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
         <SectionCard title="Business Growth" subtitle="Monthly listings added">

@@ -29,6 +29,65 @@ const galleryInclude = {
   attributes: ["id", "image"],
 };
 
+const defaultYashaswiniBusinesses = [
+  {
+    slug: "ym-fresh-groceries",
+    businessName: "Green Basket Supermarket",
+    categoryName: "Supermarket",
+    mobile: "+919812340101",
+    whatsapp: "919812340101",
+    city: "Pune",
+    state: "Maharashtra",
+    area: "Karve Nagar",
+    address: "Karve Nagar, Pune",
+    description: "Fresh produce, dairy, staples, and household needs with quick doorstep delivery.",
+    services: ["Fresh Produce", "Daily Essentials", "Delivery"],
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=70",
+  },
+  {
+    slug: "ym-home-kitchen",
+    businessName: "Urban Home Needs",
+    categoryName: "Home Essentials",
+    mobile: "+919812340102",
+    whatsapp: "919812340102",
+    city: "Pune",
+    state: "Maharashtra",
+    area: "Kothrud",
+    address: "Kothrud, Pune",
+    description: "Kitchen tools, storage jars, cleaning supplies, and daily utility products.",
+    services: ["Kitchenware", "Storage", "Cleaning"],
+    image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=70",
+  },
+  {
+    slug: "ym-snacks-beverages",
+    businessName: "Snack Street Foods",
+    categoryName: "Snacks & Beverages",
+    mobile: "+919812340103",
+    whatsapp: "919812340103",
+    city: "Pune",
+    state: "Maharashtra",
+    area: "Erandwane",
+    address: "Erandwane, Pune",
+    description: "Cookies, namkeen, juices, cold drinks, and ready-to-eat family packs.",
+    services: ["Quick Bites", "Cold Drinks", "Family Packs"],
+    image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=900&q=70",
+  },
+  {
+    slug: "ym-personal-care",
+    businessName: "GlowCare Beauty & Wellness",
+    categoryName: "Personal Care",
+    mobile: "+919812340104",
+    whatsapp: "919812340104",
+    city: "Pune",
+    state: "Maharashtra",
+    area: "Deccan",
+    address: "Deccan, Pune",
+    description: "Skincare, grooming, hygiene, and wellness essentials from trusted brands.",
+    services: ["Skincare", "Grooming", "Wellness"],
+    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=70",
+  },
+];
+
 function parseBoolean(value, fallback = false) {
   if (value === undefined || value === null || value === "") {
     return fallback;
@@ -112,6 +171,51 @@ async function validateCategorySubcategory(categoryId, subcategoryId) {
   }
 }
 
+async function getOrCreateCategoryForDefaults(name, transaction) {
+  const existing = await Category.findOne({ where: { name }, transaction });
+  if (existing) {
+    return existing;
+  }
+
+  const slug = await generateUniqueSlug(Category, name);
+  return Category.create(
+    {
+      name,
+      slug,
+      description: `${name} listings`,
+      featured: false,
+      status: "active",
+    },
+    { transaction },
+  );
+}
+
+async function getOrCreateGeneralSubcategory(category, transaction) {
+  const existing = await Subcategory.findOne({
+    where: {
+      categoryId: category.id,
+      name: "General",
+    },
+    transaction,
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  const slug = await generateUniqueSlug(Subcategory, `${category.slug}-general`);
+  return Subcategory.create(
+    {
+      categoryId: category.id,
+      name: "General",
+      slug,
+      description: `General under ${category.name}`,
+      status: "active",
+    },
+    { transaction },
+  );
+}
+
 const createBusiness = asyncHandler(async (req, res) => {
   const data = req.body;
 
@@ -177,6 +281,80 @@ const createBusiness = asyncHandler(async (req, res) => {
       success: true,
       message: "Business created successfully",
       data: created,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+});
+
+const seedYashaswiniDefaults = asyncHandler(async (_req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const created = [];
+    const skipped = [];
+
+    for (const item of defaultYashaswiniBusinesses) {
+      // eslint-disable-next-line no-await-in-loop
+      const existing = await Business.findOne({ where: { slug: item.slug }, transaction });
+      if (existing) {
+        skipped.push(item.slug);
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      const category = await getOrCreateCategoryForDefaults(item.categoryName, transaction);
+      // eslint-disable-next-line no-await-in-loop
+      const subcategory = await getOrCreateGeneralSubcategory(category, transaction);
+
+      const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        `${item.businessName}, ${item.address}`,
+      )}`;
+
+      // eslint-disable-next-line no-await-in-loop
+      await Business.create(
+        {
+          categoryId: category.id,
+          subcategoryId: subcategory.id,
+          businessName: item.businessName,
+          slug: item.slug,
+          logo: item.image,
+          banner: item.image,
+          mobile: item.mobile,
+          whatsapp: item.whatsapp,
+          address: item.address,
+          area: item.area,
+          city: item.city,
+          state: item.state,
+          pincode: null,
+          mapLink,
+          description: item.description,
+          services: item.services,
+          openingTime: "09:00",
+          closingTime: "21:00",
+          featured: true,
+          verified: true,
+          status: "active",
+          seoTitle: item.businessName,
+          seoDescription: item.description,
+        },
+        { transaction },
+      );
+
+      created.push(item.slug);
+    }
+
+    await transaction.commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Yashaswini defaults synced successfully",
+      data: {
+        created,
+        skipped,
+      },
     });
   } catch (error) {
     await transaction.rollback();
@@ -539,6 +717,7 @@ const searchBusinesses = asyncHandler(async (req, res) => {
 
 module.exports = {
   createBusiness,
+  seedYashaswiniDefaults,
   getBusinesses,
   getBusinessById,
   updateBusiness,

@@ -8,6 +8,7 @@ const {
 } = require("../validators/business.validator");
 const {
   createBusiness,
+  seedYashaswiniDefaults,
   getBusinesses,
   getBusinessById,
   updateBusiness,
@@ -28,6 +29,8 @@ router.get("/category/:id", getBusinessesByCategory);
 router.get("/subcategory/:id", getBusinessesBySubcategory);
 router.get("/search", searchBusinesses);
 router.get("/:id", getBusinessById);
+
+router.post("/seed-yashaswini-defaults", requireAuth, seedYashaswiniDefaults);
 
 router.post(
   "/",

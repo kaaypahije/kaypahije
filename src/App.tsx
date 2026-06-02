@@ -15,6 +15,7 @@ import { LoginPage } from "@/routes/login";
 import { PostBusinessPage } from "@/routes/post-business";
 import { PrivacyPage } from "@/routes/privacy";
 import { TermsPage } from "@/routes/terms";
+import { YashaswiniMartPage } from "@/routes/yashaswini-mart";
 import { AdminProtectedRoute } from "@/admin/routes/AdminProtectedRoute";
 import { AdminLayout } from "@/admin/layout/AdminLayout";
 import { AdminLoginPage } from "@/admin/pages/AdminLoginPage";
@@ -88,6 +89,7 @@ function AppShell() {
           <Route path="/listings/:id" element={<ListingDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/post-business" element={<PostBusinessPage />} />
+          <Route path="/yashaswini-mart" element={<YashaswiniMartPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="*" element={<NotFoundPage />} />

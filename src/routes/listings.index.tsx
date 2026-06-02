@@ -10,9 +10,18 @@ import {
   mapApiCategoryToSite,
   mergeWithLegacyCategories,
   type Business,
+  type SiteCategory,
 } from "@/data/businesses";
-import { fetchBusinesses, fetchCategories } from "@/services/api";
-import type { SiteCategory } from "@/data/businesses";
+import { fetchBusinesses, fetchCategories, fetchSubcategories } from "@/services/api";
+import type { Subcategory } from "@/types/directory";
+
+function slugifyText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 export function ListingsPage() {
   const [searchParams] = useSearchParams();
@@ -20,10 +29,20 @@ export function ListingsPage() {
   const [city, setCity] = useState(searchParams.get("city") ?? "");
   const [category, setCategory] = useState(searchParams.get("category") ?? "");
   const [subcategory, setSubcategory] = useState(searchParams.get("subcategory") ?? "");
+  const [subcategoryIdParam, setSubcategoryIdParam] = useState(searchParams.get("subcategoryId") ?? "");
   const [showFilters, setShowFilters] = useState(false);
   const [categories, setCategories] = useState<SiteCategory[]>(legacyCategories);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setQ(searchParams.get("q") ?? "");
+    setCity(searchParams.get("city") ?? "");
+    setCategory(searchParams.get("category") ?? "");
+    setSubcategory(searchParams.get("subcategory") ?? "");
+    setSubcategoryIdParam(searchParams.get("subcategoryId") ?? "");
+  }, [searchParams]);
 
   useEffect(() => {
     let active = true;
@@ -50,6 +69,53 @@ export function ListingsPage() {
     };
   }, []);
 
+  const selectedCategory = useMemo(() => {
+    const lowered = category.trim().toLowerCase();
+    if (!lowered) {
+      return null;
+    }
+
+    return (
+      categories.find((item) => item.slug.toLowerCase() === lowered || item.name.toLowerCase() === lowered) || null
+    );
+  }, [categories, category]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSubcategories() {
+      if (!selectedCategory?.id) {
+        setSubcategories([]);
+        return;
+      }
+
+      try {
+        const response = await fetchSubcategories({
+          page: 1,
+          limit: 300,
+          status: "active",
+          categoryId: selectedCategory.id,
+        });
+
+        if (!active) {
+          return;
+        }
+
+        setSubcategories(response.data);
+      } catch (_error) {
+        if (active) {
+          setSubcategories([]);
+        }
+      }
+    }
+
+    loadSubcategories();
+
+    return () => {
+      active = false;
+    };
+  }, [selectedCategory?.id]);
+
   useEffect(() => {
     let active = true;
 
@@ -57,10 +123,21 @@ export function ListingsPage() {
       try {
         setLoading(true);
 
-        const selectedCategory = categories.find((item) => {
-          const lowered = category.trim().toLowerCase();
-          return item.slug.toLowerCase() === lowered || item.name.toLowerCase() === lowered;
-        });
+        const normalizedSubcategory = subcategory.trim().toLowerCase();
+        const rawSubcategoryId = Number(subcategoryIdParam);
+        const hasNumericSubcategoryId = Number.isInteger(rawSubcategoryId) && rawSubcategoryId > 0;
+
+        let selectedSubcategoryId: number | undefined;
+        if (hasNumericSubcategoryId) {
+          selectedSubcategoryId = rawSubcategoryId;
+        } else if (normalizedSubcategory) {
+          const matched = subcategories.find(
+            (item) =>
+              item.slug.toLowerCase() === normalizedSubcategory ||
+              item.name.toLowerCase() === normalizedSubcategory,
+          );
+          selectedSubcategoryId = matched?.id;
+        }
 
         const response = await fetchBusinesses({
           page: 1,
@@ -69,6 +146,7 @@ export function ListingsPage() {
           search: q,
           city,
           categoryId: selectedCategory?.id,
+          subcategoryId: selectedSubcategoryId,
         });
 
         if (!active) {
@@ -103,13 +181,16 @@ export function ListingsPage() {
       active = false;
       clearTimeout(timer);
     };
-  }, [q, city, category, categories]);
+  }, [q, city, selectedCategory?.id, subcategory, subcategoryIdParam, subcategories]);
 
   const filtered = useMemo(() => {
     const normalizedQuery = q.trim().toLowerCase();
     const normalizedCategory = category.trim().toLowerCase();
+    const normalizedSubcategory = subcategory.trim().toLowerCase();
+    const rawSubcategoryId = Number(subcategoryIdParam);
+    const hasNumericSubcategoryId = Number.isInteger(rawSubcategoryId) && rawSubcategoryId > 0;
 
-    const baseFiltered = businesses.filter((business) => {
+    return businesses.filter((business) => {
       if (normalizedQuery) {
         const haystack =
           `${business.name} ${business.description} ${business.category} ${business.tags.join(" ")}`.toLowerCase();
@@ -123,28 +204,35 @@ export function ListingsPage() {
       }
 
       if (normalizedCategory) {
-        const matchesSlug = business.category
-          .toLowerCase()
-          .replace(/&/g, "")
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-        if (matchesSlug !== normalizedCategory && business.category.toLowerCase() !== normalizedCategory) {
+        const businessCategorySlug = slugifyText(business.category);
+        if (businessCategorySlug !== normalizedCategory && business.category.toLowerCase() !== normalizedCategory) {
           return false;
+        }
+      }
+
+      if (normalizedSubcategory) {
+        if (hasNumericSubcategoryId && business.subcategoryId) {
+          if (business.subcategoryId !== rawSubcategoryId) {
+            return false;
+          }
+        } else {
+          const businessSubcategoryName = (business.subcategory || "").toLowerCase();
+          const businessSubcategorySlug = business.subcategorySlug
+            ? business.subcategorySlug.toLowerCase()
+            : slugifyText(business.subcategory || "");
+
+          if (
+            businessSubcategoryName !== normalizedSubcategory &&
+            businessSubcategorySlug !== normalizedSubcategory
+          ) {
+            return false;
+          }
         }
       }
 
       return true;
     });
-
-    const sub = subcategory.trim().toLowerCase();
-    if (!sub) return baseFiltered;
-
-    const subFiltered = baseFiltered.filter((business) =>
-      `${business.name} ${business.description} ${business.tags.join(" ")}`.toLowerCase().includes(sub),
-    );
-
-    return subFiltered.length > 0 ? subFiltered : baseFiltered;
-  }, [businesses, q, city, category, subcategory]);
+  }, [businesses, q, city, category, subcategory, subcategoryIdParam]);
 
   return (
     <>
@@ -197,23 +285,31 @@ export function ListingsPage() {
                   onClick={() => {
                     setCategory("");
                     setSubcategory("");
+                    setSubcategoryIdParam("");
                   }}
                   className={`w-full text-left rounded-lg px-3 py-1.5 text-sm ${!category ? "bg-accent/10 text-accent font-semibold" : "hover:bg-secondary"}`}
                 >
                   All Categories
                 </button>
-                {categories.map((c) => (
-                  <button
-                    key={c.slug}
-                    onClick={() => {
-                      setCategory(c.slug);
-                      setSubcategory("");
-                    }}
-                    className={`w-full text-left rounded-lg px-3 py-1.5 text-sm ${category === c.slug ? "bg-accent/10 text-accent font-semibold" : "hover:bg-secondary"}`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
+                {categories.map((c) => {
+                  const isActive =
+                    category.toLowerCase() === c.slug.toLowerCase() ||
+                    category.toLowerCase() === c.name.toLowerCase();
+
+                  return (
+                    <button
+                      key={c.slug}
+                      onClick={() => {
+                        setCategory(c.slug);
+                        setSubcategory("");
+                        setSubcategoryIdParam("");
+                      }}
+                      className={`w-full text-left rounded-lg px-3 py-1.5 text-sm ${isActive ? "bg-accent/10 text-accent font-semibold" : "hover:bg-secondary"}`}
+                    >
+                      {c.name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </aside>

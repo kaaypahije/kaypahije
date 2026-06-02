@@ -95,7 +95,7 @@ const getSubcategoriesByCategory = asyncHandler(async (req, res) => {
       categoryId,
       status: "active",
     },
-    attributes: ["id", "name", "slug", "categoryId", "status"],
+    attributes: ["id", "name", "slug", "categoryId", "image", "description", "status"],
     order: [["name", "ASC"]],
   });
 

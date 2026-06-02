@@ -19,11 +19,12 @@ import { BusinessCard } from "@/components/site/BusinessCard";
 import { CategoryGrid } from "@/components/site/CategoryGrid";
 import {
   cities,
+  isYashaswiniMartCategoryName,
   legacyBusinesses,
   mapApiBusinessToSite,
+  mergeWithLegacyYashaswiniBusinesses,
   trendingSearches,
   type Business,
-  yashaswiniMartCards,
 } from "@/data/businesses";
 import { fetchBusinesses, fetchFeaturedBusinesses } from "@/services/api";
 
@@ -114,6 +115,7 @@ export function HomePage() {
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [featuredCards, setFeaturedCards] = useState<Business[]>(legacyBusinesses.filter((item) => item.featured));
   const [popularCards, setPopularCards] = useState<Business[]>(legacyBusinesses.slice(0, 8));
+  const [yashaswiniCards, setYashaswiniCards] = useState<Business[]>([]);
   const [listingsLoading, setListingsLoading] = useState(true);
 
   const heroSlides = [
@@ -159,7 +161,7 @@ export function HomePage() {
         setListingsLoading(true);
         const [featuredResponse, recentResponse] = await Promise.all([
           fetchFeaturedBusinesses(8),
-          fetchBusinesses({ page: 1, limit: 12, status: "active" }),
+          fetchBusinesses({ page: 1, limit: 150, status: "active" }),
         ]);
 
         if (!active) {
@@ -189,10 +191,15 @@ export function HomePage() {
 
         setFeaturedCards(featuredMerged.slice(0, 8));
         setPopularCards(popularMerged.slice(0, 8));
+
+        const martCandidates = popularMerged.filter((item) => isYashaswiniMartCategoryName(item.category));
+        const martMerged = mergeWithLegacyYashaswiniBusinesses(martCandidates);
+        setYashaswiniCards(martMerged.slice(0, 8));
       } catch (_error) {
         if (active) {
           setFeaturedCards(legacyBusinesses.filter((item) => item.featured).slice(0, 8));
           setPopularCards(legacyBusinesses.slice(0, 8));
+          setYashaswiniCards(mergeWithLegacyYashaswiniBusinesses([]).slice(0, 8));
         }
       } finally {
         if (active) {
@@ -387,9 +394,25 @@ export function HomePage() {
           Yashaswini Mart
         </h2>
         <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {yashaswiniMartCards.map((b, i) => (
-            <BusinessCard key={b.id} b={b} index={i} />
-          ))}
+          {listingsLoading ? (
+            <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              Loading Yashaswini Mart listings...
+            </div>
+          ) : yashaswiniCards.length > 0 ? (
+            yashaswiniCards.slice(0, 4).map((b, i) => <BusinessCard key={b.id} b={b} index={i} />)
+          ) : (
+            <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              No Yashaswini Mart listings available yet.
+            </div>
+          )}
+        </div>
+        <div className="mt-8 flex justify-center">
+          <Link
+            to="/yashaswini-mart"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-soft hover:shadow-glow transition-all"
+          >
+            Explore More <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 

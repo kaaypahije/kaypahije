@@ -264,7 +264,7 @@ export function AdminCategoriesPage() {
           <table className="min-w-full text-left text-sm">
             <thead>
               <tr className="border-b border-[#edf0f7] text-[#7584a9]">
-                <th className="px-3 py-3 font-semibold">Image</th>
+                <th className="px-3 py-3 font-semibold">Icon</th>
                 <th className="px-3 py-3 font-semibold">Name</th>
                 <th className="px-3 py-3 font-semibold">Slug</th>
                 <th className="px-3 py-3 font-semibold">Featured</th>
@@ -408,7 +408,7 @@ export function AdminCategoriesPage() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Category Image</label>
+            <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Category Icon</label>
             <input
               type="file"
               accept="image/*"

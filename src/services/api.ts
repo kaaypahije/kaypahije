@@ -191,3 +191,14 @@ export function deleteBusiness(token: string, id: number) {
     token,
   });
 }
+
+export function seedYashaswiniDefaults(token: string) {
+  return request<{
+    success: boolean;
+    message: string;
+    data: { created: string[]; skipped: string[] };
+  }>("/api/businesses/seed-yashaswini-defaults", {
+    method: "POST",
+    token,
+  });
+}
