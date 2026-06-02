@@ -141,7 +141,19 @@ export function Footer() {
         </div>
 
         <div className="mt-4 flex items-center justify-center border-t border-white/10 pt-2.5 text-[11px] md:text-xs text-primary-foreground/60">
-          <p>&copy; {new Date().getFullYear()} Kay Pahije. All rights reserved.</p>
+          <div className="text-center space-y-1">
+            <p>
+              © 2026 All Rights Reserved By Kay Pahije. Designed By{" "}
+              <a
+                href="https://webakoof.com/index.html"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-primary-foreground underline decoration-primary-foreground/40 underline-offset-2 hover:text-accent hover:decoration-accent transition-colors"
+              >
+                Webakoof
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
