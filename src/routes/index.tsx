@@ -572,23 +572,22 @@ export function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 md:px-6 pb-16 md:pb-24">
         <div className="rounded-4xl bg-gradient-accent p-8 md:p-14 text-accent-foreground text-center shadow-glow">
-          <h2 className="text-3xl md:text-5xl font-extrabold">Own a business? Get discovered.</h2>
+          <span className="inline-flex items-center rounded-full border border-white/30 bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/90">
+            Live Radio
+          </span>
+          <h2 className="mt-4 text-3xl md:text-5xl font-extrabold">Tune in to Radio Parbhani 90.8 FM</h2>
           <p className="mt-4 max-w-xl mx-auto text-accent-foreground/90">
-            Join thousands of businesses growing with Kay Pahije. List for free in minutes.
+            Live music, local updates, and community stories from Parbhani.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/post-business"
+            <a
+              href="https://liveradios.in/radio-parbhani-90-8.html"
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-7 py-3 font-semibold shadow-soft hover:bg-primary-glow transition"
             >
-              Post your business <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/about"
-              className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur border border-white/30 px-7 py-3 font-semibold hover:bg-white/30 transition"
-            >
-              Learn more
-            </Link>
+              Listen Live <ArrowRight className="h-4 w-4" />
+            </a>
           </div>
         </div>
       </section>
