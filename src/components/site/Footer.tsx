@@ -113,7 +113,7 @@ export function Footer() {
                     showRadioTooltip ? "opacity-100" : ""
                   }`}
                 >
-                  Radio Parbhani 90.8
+                  Listen to Radio Parbhani 90.8 FM
                 </span>
               </a>
             </div>
