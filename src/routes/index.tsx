@@ -26,6 +26,7 @@ import {
   mapApiBusinessToSite,
   mapApiSubcategoryToSite,
   mergeWithLegacyYashaswiniBusinesses,
+  getLegacySubcategoriesForCategory,
   trendingSearches,
   type Business,
   type SiteCategory,
@@ -249,17 +250,15 @@ export function HomePage() {
     try {
       const response = await fetchSubcategoriesByCategory(category.id);
       const mapped = response.data.map(mapApiSubcategoryToSite);
-
-      if (mapped.length === 0) {
+      setSubcategories(mapped.length > 0 ? mapped : getLegacySubcategoriesForCategory(category));
+    } catch (_error) {
+      const fallbackSubcategories = getLegacySubcategoriesForCategory(category);
+      if (fallbackSubcategories.length === 0) {
         closeCategoryModal();
         navigate(`/listings?category=${encodeURIComponent(category.slug)}`);
         return;
       }
-
-      setSubcategories(mapped);
-    } catch (_error) {
-      closeCategoryModal();
-      navigate(`/listings?category=${encodeURIComponent(category.slug)}`);
+      setSubcategories(fallbackSubcategories);
     } finally {
       setLoadingSubcategories(false);
     }
@@ -271,8 +270,9 @@ export function HomePage() {
     }
 
     closeCategoryModal();
+    const subcategoryIdQuery = subcategory.id > 0 ? `&subcategoryId=${subcategory.id}` : "";
     navigate(
-      `/listings?category=${encodeURIComponent(selectedCategory.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}&subcategoryId=${subcategory.id}`,
+      `/listings?category=${encodeURIComponent(selectedCategory.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}${subcategoryIdQuery}`,
     );
   };
 

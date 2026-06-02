@@ -190,7 +190,7 @@ export function ListingsPage() {
     const rawSubcategoryId = Number(subcategoryIdParam);
     const hasNumericSubcategoryId = Number.isInteger(rawSubcategoryId) && rawSubcategoryId > 0;
 
-    return businesses.filter((business) => {
+    const matchesFilters = (business: Business, includeSubcategoryFilter: boolean) => {
       if (normalizedQuery) {
         const haystack =
           `${business.name} ${business.description} ${business.category} ${business.tags.join(" ")}`.toLowerCase();
@@ -210,7 +210,7 @@ export function ListingsPage() {
         }
       }
 
-      if (normalizedSubcategory) {
+      if (includeSubcategoryFilter && normalizedSubcategory) {
         if (hasNumericSubcategoryId && business.subcategoryId) {
           if (business.subcategoryId !== rawSubcategoryId) {
             return false;
@@ -231,7 +231,14 @@ export function ListingsPage() {
       }
 
       return true;
-    });
+    };
+
+    const exactMatches = businesses.filter((business) => matchesFilters(business, true));
+    if (exactMatches.length > 0 || (!normalizedSubcategory && !hasNumericSubcategoryId)) {
+      return exactMatches;
+    }
+
+    return businesses.filter((business) => matchesFilters(business, false));
   }, [businesses, q, city, category, subcategory, subcategoryIdParam]);
 
   return (

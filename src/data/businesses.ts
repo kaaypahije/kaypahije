@@ -128,6 +128,67 @@ export const legacyCategories: SiteCategory[] = [
 
 export const categories = legacyCategories.map((category) => ({ name: category.name }));
 
+const legacySubcategoryTemplates: Record<string, string[]> = {
+  restaurants: ["Fine Dining", "Fast Food", "Veg Restaurant", "Non Veg Restaurant", "Cafe"],
+  hotels: ["Luxury Hotels", "Budget Hotels", "Resorts", "Business Hotels", "Family Hotels"],
+  hospitals: ["General", "Cardiology", "Child Care", "Dental", "Emergency"],
+  education: ["Schools", "Colleges", "Coaching", "Online Learning", "Vocational"],
+  electronics: ["Mobiles", "Laptops", "Accessories", "Home Appliances", "Repairs"],
+  fashion: ["Men's Wear", "Women's Wear", "Kids Wear", "Footwear", "Accessories"],
+  automobiles: ["Cars", "Bikes", "Service Centers", "Spare Parts", "Accessories"],
+  "packers-movers": ["Local Moving", "Domestic Moving", "Office Shifting", "Storage", "Packing Services"],
+  "beauty-salon": ["Hair Salon", "Spa", "Skin Care", "Bridal Makeup", "Grooming"],
+  "home-services": ["AC Repair", "Plumbing", "Electrical", "Cleaning", "Painting"],
+  "gym-fitness": ["Gym", "Yoga", "CrossFit", "Personal Training", "Cardio"],
+  "interior-designers": ["Residential", "Commercial", "Modular Kitchens", "Space Planning", "Renovation"],
+  "event-management": ["Weddings", "Corporate Events", "Birthday Parties", "Decoration", "Catering"],
+  "digital-marketing": ["SEO", "Social Media", "Ads", "Branding", "Content"],
+  "travel-tourism": ["Tours", "Hotels", "Transport", "Flight Booking", "Visa"],
+  "vivah-services": ["Pandit", "Marriage Hall", "Photographer", "Catering", "Decor"],
+  "construction-services": ["Contractors", "Materials", "Architecture", "Renovation", "Civil Work"],
+};
+
+function slugifyLabel(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function getLegacySubcategoriesForCategory(category: SiteCategory | string): SiteSubcategory[] {
+  const slug = (typeof category === "string" ? category : category.slug).toLowerCase();
+  const categoryId = typeof category === "string" ? 0 : category.id;
+  const labels = legacySubcategoryTemplates[slug] || [];
+
+  return labels.map((name, index) => ({
+    id: -(categoryId * 100 + index + 1),
+    categoryId,
+    name,
+    slug: slugifyLabel(name),
+    image: null,
+    description: `Explore ${name.toLowerCase()} services`,
+  }));
+}
+
+export function mergeSubcategoriesWithLegacyFallback(
+  category: SiteCategory | string,
+  apiSubcategories: SiteSubcategory[] = [],
+) {
+  const merged = [...apiSubcategories];
+  const existing = new Set(apiSubcategories.map((subcategory) => subcategory.slug.toLowerCase()));
+
+  for (const fallbackSubcategory of getLegacySubcategoriesForCategory(category)) {
+    const key = fallbackSubcategory.slug.toLowerCase();
+    if (!existing.has(key)) {
+      merged.push(fallbackSubcategory);
+      existing.add(key);
+    }
+  }
+
+  return merged;
+}
+
 export const legacyBusinesses: Business[] = [
   {
     id: "ananya-hospital",
