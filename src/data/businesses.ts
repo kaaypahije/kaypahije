@@ -24,6 +24,7 @@ export type Business = {
   image: string;
   description: string;
   tags: string[];
+  price?: string;
   imageLink?: string;
   verified?: boolean;
   featured?: boolean;
@@ -384,6 +385,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1542838132-92c53300491e",
     description: "Fresh produce, dairy, staples, and household needs with quick doorstep delivery.",
     tags: ["Fresh Produce", "Daily Essentials", "Delivery"],
+    price: "₹99 onwards",
     verified: true,
     featured: true,
   },
@@ -401,6 +403,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1556911220-bff31c812dba",
     description: "Kitchen tools, storage jars, cleaning supplies, and daily utility products.",
     tags: ["Kitchenware", "Storage", "Cleaning"],
+    price: "₹49 onwards",
     verified: true,
     featured: true,
   },
@@ -418,6 +421,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1499636136210-6f4ee915583e",
     description: "Cookies, namkeen, juices, cold drinks, and ready-to-eat family packs.",
     tags: ["Quick Bites", "Cold Drinks", "Family Packs"],
+    price: "₹29 onwards",
     verified: true,
     featured: true,
   },
@@ -435,6 +439,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1522335789203-aabd1fc54bc9",
     description: "Skincare, grooming, hygiene, and wellness essentials from trusted brands.",
     tags: ["Skincare", "Grooming", "Wellness"],
+    price: "₹149 onwards",
     verified: true,
     featured: true,
   },
@@ -452,6 +457,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1498837167922-ddd27525d352",
     description: "Fresh homemade meals, lunch boxes, and party platters prepared with care.",
     tags: ["Home Cooked", "Meal Boxes", "Party Orders"],
+    price: "₹89 onwards",
     verified: true,
   },
   {
@@ -468,6 +474,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1542838132-92c53300491e",
     description: "Everyday grocery staples, fresh produce, and quick doorstep restocking.",
     tags: ["Staples", "Fresh Produce", "Delivery"],
+    price: "₹79 onwards",
     verified: true,
   },
   {
@@ -484,6 +491,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1513519245088-0e12902e5a38",
     description: "Thoughtful gifts, personalized hampers, and celebration decor for every occasion.",
     tags: ["Hampers", "Birthday Gifts", "Personalized"],
+    price: "₹199 onwards",
     verified: true,
   },
   {
@@ -500,6 +508,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1517836357463-d25dfeac3438",
     description: "Vitamins, supplements, self-care essentials, and healthy lifestyle products.",
     tags: ["Supplements", "Self Care", "Healthy Living"],
+    price: "₹249 onwards",
     verified: true,
   },
   {
@@ -516,6 +525,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1519823551278-64ac92734fb1",
     description: "Herbal oils, Ayurvedic remedies, and traditional wellness products.",
     tags: ["Herbal", "Traditional Care", "Natural"],
+    price: "₹129 onwards",
     verified: true,
   },
   {
@@ -532,6 +542,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1617038220319-276d3cfab638",
     description: "Fashionable imitation jewellery, bridal sets, and everyday statement pieces.",
     tags: ["Bridal", "Fashion Jewellery", "Accessories"],
+    price: "₹299 onwards",
     verified: true,
   },
   {
@@ -548,6 +559,7 @@ export const yashaswiniMartCards: Business[] = [
     image: "photo-1464226184884-fa280b87c399",
     description: "Certified organic grains, fruits, vegetables, and healthy pantry staples.",
     tags: ["Certified Organic", "Fresh", "Healthy Pantry"],
+    price: "₹159 onwards",
     verified: true,
   },
 ];
@@ -690,6 +702,7 @@ export function mapApiBusinessToSite(business: ApiBusiness): Business {
     image,
     description: business.description || "",
     tags: (business.services || []).slice(0, 8),
+    price: isYashaswiniMartCategoryName(categoryName) ? business.price || "Price on request" : undefined,
     imageLink: mapLink,
     verified: business.verified,
     featured: business.featured,

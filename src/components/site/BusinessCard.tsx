@@ -1,6 +1,6 @@
-import { MapPin, Phone, BadgeCheck, MessageCircle, Navigation } from "lucide-react";
+import { MapPin, Phone, BadgeCheck, MessageCircle, Navigation, IndianRupee } from "lucide-react";
 import { Link } from "react-router-dom";
-import { businessImage, type Business } from "@/data/businesses";
+import { businessImage, isYashaswiniMartCategoryName, type Business } from "@/data/businesses";
 
 export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) {
   const directionLink =
@@ -46,6 +46,13 @@ export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) 
         <p className="mt-1 flex items-start gap-1 text-sm text-muted-foreground line-clamp-2 min-h-[2.75rem]">
           <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-accent" /> {b.address}
         </p>
+
+        {isYashaswiniMartCategoryName(b.category) ? (
+          <div className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full border border-[#ffd8b0] bg-[#fff6ec] px-3 py-1 text-sm font-semibold text-[#c96a00]">
+            <IndianRupee className="h-3.5 w-3.5" />
+            <span>{b.price || "Price on request"}</span>
+          </div>
+        ) : null}
 
         <div className="mt-4 flex flex-wrap gap-1.5">
           {b.tags.slice(0, 3).map((t) => (

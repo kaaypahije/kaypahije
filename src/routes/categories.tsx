@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImageIcon, X } from "lucide-react";
 import { CategoryGrid } from "@/components/site/CategoryGrid";
 import {
   mapApiSubcategoryToSite,
   getLegacySubcategoriesForCategory,
+  mergeSubcategoriesWithLegacyFallback,
   type SiteCategory,
   type SiteSubcategory,
 } from "@/data/businesses";
@@ -15,31 +16,41 @@ export function CategoriesPage() {
   const [selectedCategory, setSelectedCategory] = useState<SiteCategory | null>(null);
   const [subcategories, setSubcategories] = useState<SiteSubcategory[]>([]);
   const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+  const subcategoryRequestRef = useRef(0);
 
   const closeModal = () => {
+    subcategoryRequestRef.current += 1;
     setSelectedCategory(null);
     setSubcategories([]);
+    setLoadingSubcategories(false);
   };
 
   const handleCategoryClick = async (category: SiteCategory) => {
+    const requestId = ++subcategoryRequestRef.current;
     setSelectedCategory(category);
-    setLoadingSubcategories(true);
-    setSubcategories([]);
+    const fallbackSubcategories = getLegacySubcategoriesForCategory(category);
+    setSubcategories(fallbackSubcategories);
+    setLoadingSubcategories(fallbackSubcategories.length === 0);
 
     try {
       const response = await fetchSubcategoriesByCategory(category.id);
+      if (requestId !== subcategoryRequestRef.current) {
+        return;
+      }
       const mapped = response.data.map(mapApiSubcategoryToSite);
-      setSubcategories(mapped.length > 0 ? mapped : getLegacySubcategoriesForCategory(category));
+      setSubcategories(mergeSubcategoriesWithLegacyFallback(category, mapped));
     } catch (_error) {
-      const fallbackSubcategories = getLegacySubcategoriesForCategory(category);
+      if (requestId !== subcategoryRequestRef.current) {
+        return;
+      }
       if (fallbackSubcategories.length === 0) {
         closeModal();
         navigate(`/listings?category=${encodeURIComponent(category.slug)}`);
-        return;
       }
-      setSubcategories(fallbackSubcategories);
     } finally {
-      setLoadingSubcategories(false);
+      if (requestId === subcategoryRequestRef.current) {
+        setLoadingSubcategories(false);
+      }
     }
   };
 

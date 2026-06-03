@@ -1,10 +1,50 @@
 import { Link } from "react-router-dom";
-import * as Icons from "lucide-react";
+import {
+  BedDouble,
+  Building2,
+  Car,
+  Circle,
+  Dumbbell,
+  Flower2,
+  GraduationCap,
+  Laptop,
+  Megaphone,
+  PartyPopper,
+  Plane,
+  Scissors,
+  Sofa,
+  Stethoscope,
+  Shirt,
+  Truck,
+  UtensilsCrossed,
+  Wrench,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { legacyCategories, mapApiCategoryToSite, mergeWithLegacyCategories, type SiteCategory } from "@/data/businesses";
 import { fetchCategories } from "@/services/api";
 
-type IconName = keyof typeof Icons;
+const iconMap = {
+  UtensilsCrossed,
+  BedDouble,
+  Stethoscope,
+  GraduationCap,
+  Laptop,
+  Shirt,
+  Car,
+  Truck,
+  Scissors,
+  Wrench,
+  Dumbbell,
+  Sofa,
+  PartyPopper,
+  Megaphone,
+  Plane,
+  Flower2,
+  Building2,
+  Circle,
+} as const;
+
+type IconName = keyof typeof iconMap;
 
 export function CategoryGrid({
   limit,
@@ -47,10 +87,7 @@ export function CategoryGrid({
   const items = limit ? categories.slice(0, limit) : categories;
   const isHome = mode === "home";
 
-  function renderCategoryIcon(
-    category: SiteCategory,
-    Icon: React.ComponentType<{ className?: string }>,
-  ) {
+  function renderCategoryIcon(category: SiteCategory, Icon: (typeof iconMap)[IconName]) {
     const sizeClass = isHome ? "h-16 w-16" : "h-14 w-14";
 
     if (category.image) {
@@ -81,9 +118,7 @@ export function CategoryGrid({
       }
     >
       {items.map((c, i) => {
-        const Icon = (Icons[c.icon as IconName] || Icons.Circle) as React.ComponentType<{
-          className?: string;
-        }>;
+        const Icon = iconMap[c.icon as IconName] || Circle;
         const cardClass = `group relative flex flex-col items-center justify-center rounded-2xl bg-card border hover-lift animate-fade-up ${
           activeCategory === c.slug || activeCategory === c.name
             ? "border-accent shadow-glow"

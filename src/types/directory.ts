@@ -38,6 +38,7 @@ export interface Business {
   subcategoryId: number;
   businessName: string;
   slug: string;
+  price?: string | null;
   logo: string | null;
   banner: string | null;
   mobile: string;

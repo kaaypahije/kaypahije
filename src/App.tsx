@@ -1,28 +1,45 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { FloatingActions } from "@/components/site/FloatingActions";
-import { AboutPage } from "@/routes/about";
-import { BlogPage } from "@/routes/blog";
-import { CategoriesPage } from "@/routes/categories";
-import { ContactPage } from "@/routes/contact";
-import { FaqPage } from "@/routes/faqs";
-import { HomePage } from "@/routes/index";
-import { ListingDetailPage } from "@/routes/listings.$id";
-import { ListingsPage } from "@/routes/listings.index";
-import { LoginPage } from "@/routes/login";
-import { PostBusinessPage } from "@/routes/post-business";
-import { PrivacyPage } from "@/routes/privacy";
-import { TermsPage } from "@/routes/terms";
-import { YashaswiniMartPage } from "@/routes/yashaswini-mart";
 import { AdminProtectedRoute } from "@/admin/routes/AdminProtectedRoute";
 import { AdminLayout } from "@/admin/layout/AdminLayout";
-import { AdminLoginPage } from "@/admin/pages/AdminLoginPage";
-import { AdminDashboardPage } from "@/admin/pages/AdminDashboardPage";
-import { AdminCategoriesPage } from "@/admin/pages/AdminCategoriesPage";
-import { AdminSubcategoriesPage } from "@/admin/pages/AdminSubcategoriesPage";
-import { AdminBusinessesPage } from "@/admin/pages/AdminBusinessesPage";
+
+const AboutPage = lazy(() => import("@/routes/about").then((module) => ({ default: module.AboutPage })));
+const BlogPage = lazy(() => import("@/routes/blog").then((module) => ({ default: module.BlogPage })));
+const CategoriesPage = lazy(() => import("@/routes/categories").then((module) => ({ default: module.CategoriesPage })));
+const ContactPage = lazy(() => import("@/routes/contact").then((module) => ({ default: module.ContactPage })));
+const FaqPage = lazy(() => import("@/routes/faqs").then((module) => ({ default: module.FaqPage })));
+const HomePage = lazy(() => import("@/routes/index").then((module) => ({ default: module.HomePage })));
+const ListingDetailPage = lazy(() =>
+  import("@/routes/listings.$id").then((module) => ({ default: module.ListingDetailPage })),
+);
+const ListingsPage = lazy(() => import("@/routes/listings.index").then((module) => ({ default: module.ListingsPage })));
+const LoginPage = lazy(() => import("@/routes/login").then((module) => ({ default: module.LoginPage })));
+const PostBusinessPage = lazy(() =>
+  import("@/routes/post-business").then((module) => ({ default: module.PostBusinessPage })),
+);
+const PrivacyPage = lazy(() => import("@/routes/privacy").then((module) => ({ default: module.PrivacyPage })));
+const TermsPage = lazy(() => import("@/routes/terms").then((module) => ({ default: module.TermsPage })));
+const YashaswiniMartPage = lazy(() =>
+  import("@/routes/yashaswini-mart").then((module) => ({ default: module.YashaswiniMartPage })),
+);
+const AdminLoginPage = lazy(() =>
+  import("@/admin/pages/AdminLoginPage").then((module) => ({ default: module.AdminLoginPage })),
+);
+const AdminDashboardPage = lazy(() =>
+  import("@/admin/pages/AdminDashboardPage").then((module) => ({ default: module.AdminDashboardPage })),
+);
+const AdminCategoriesPage = lazy(() =>
+  import("@/admin/pages/AdminCategoriesPage").then((module) => ({ default: module.AdminCategoriesPage })),
+);
+const AdminSubcategoriesPage = lazy(() =>
+  import("@/admin/pages/AdminSubcategoriesPage").then((module) => ({ default: module.AdminSubcategoriesPage })),
+);
+const AdminBusinessesPage = lazy(() =>
+  import("@/admin/pages/AdminBusinessesPage").then((module) => ({ default: module.AdminBusinessesPage })),
+);
 
 function NotFoundPage() {
   return (
@@ -63,37 +80,45 @@ function AppShell() {
       <ScrollToTop />
       {!hideChrome && <Header />}
       <main className="flex-1">
-        <Routes>
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route
-            path="/admin"
-            element={
-              <AdminProtectedRoute>
-                <AdminLayout />
-              </AdminProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="categories" element={<AdminCategoriesPage />} />
-            <Route path="subcategories" element={<AdminSubcategoriesPage />} />
-            <Route path="businesses" element={<AdminBusinessesPage />} />
-          </Route>
-          <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/faqs" element={<FaqPage />} />
-          <Route path="/listings" element={<ListingsPage />} />
-          <Route path="/listings/:id" element={<ListingDetailPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/post-business" element={<PostBusinessPage />} />
-          <Route path="/yashaswini-mart" element={<YashaswiniMartPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <Suspense
+          fallback={
+            <div className="mx-auto flex min-h-[50vh] max-w-7xl items-center justify-center px-4 text-sm text-muted-foreground">
+              Loading page...
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminProtectedRoute>
+                  <AdminLayout />
+                </AdminProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="categories" element={<AdminCategoriesPage />} />
+              <Route path="subcategories" element={<AdminSubcategoriesPage />} />
+              <Route path="businesses" element={<AdminBusinessesPage />} />
+            </Route>
+            <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/faqs" element={<FaqPage />} />
+            <Route path="/listings" element={<ListingsPage />} />
+            <Route path="/listings/:id" element={<ListingDetailPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/post-business" element={<PostBusinessPage />} />
+            <Route path="/yashaswini-mart" element={<YashaswiniMartPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
       </main>
       {!hideChrome && <Footer />}
       {!hideChrome && <FloatingActions />}

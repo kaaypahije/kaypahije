@@ -18,6 +18,7 @@ interface RequestOptions {
   token?: string | null;
   headers?: Record<string, string>;
   isFormData?: boolean;
+  timeoutMs?: number;
 }
 
 export class HttpError extends Error {
@@ -32,7 +33,7 @@ export class HttpError extends Error {
 }
 
 export async function request<T>(pathname: string, options: RequestOptions = {}): Promise<T> {
-  const { method = "GET", body, token, headers = {}, isFormData = false } = options;
+  const { method = "GET", body, token, headers = {}, isFormData = false, timeoutMs = 8000 } = options;
 
   const requestHeaders: Record<string, string> = {
     ...headers,
@@ -46,11 +47,25 @@ export async function request<T>(pathname: string, options: RequestOptions = {})
     requestHeaders.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(buildApiUrl(pathname), {
-    method,
-    headers: requestHeaders,
-    body: body === undefined ? undefined : isFormData ? (body as FormData) : JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+
+  let response;
+  try {
+    response = await fetch(buildApiUrl(pathname), {
+      method,
+      headers: requestHeaders,
+      body: body === undefined ? undefined : isFormData ? (body as FormData) : JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if ((error as Error).name === "AbortError") {
+      throw new HttpError("Request timed out", 408, null);
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
 
   const payload = await response.json().catch(() => ({}));
 
