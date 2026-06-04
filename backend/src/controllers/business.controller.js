@@ -34,6 +34,8 @@ const defaultYashaswiniBusinesses = [
     slug: "ym-fresh-groceries",
     businessName: "Green Basket Supermarket",
     categoryName: "Supermarket",
+    price: 99,
+    priceLabel: "onwards",
     mobile: "+919812340101",
     whatsapp: "919812340101",
     city: "Pune",
@@ -48,6 +50,8 @@ const defaultYashaswiniBusinesses = [
     slug: "ym-home-kitchen",
     businessName: "Urban Home Needs",
     categoryName: "Home Essentials",
+    price: 49,
+    priceLabel: "onwards",
     mobile: "+919812340102",
     whatsapp: "919812340102",
     city: "Pune",
@@ -62,6 +66,8 @@ const defaultYashaswiniBusinesses = [
     slug: "ym-snacks-beverages",
     businessName: "Snack Street Foods",
     categoryName: "Snacks & Beverages",
+    price: 29,
+    priceLabel: "onwards",
     mobile: "+919812340103",
     whatsapp: "919812340103",
     city: "Pune",
@@ -76,6 +82,8 @@ const defaultYashaswiniBusinesses = [
     slug: "ym-personal-care",
     businessName: "GlowCare Beauty & Wellness",
     categoryName: "Personal Care",
+    price: 149,
+    priceLabel: "onwards",
     mobile: "+919812340104",
     whatsapp: "919812340104",
     city: "Pune",
@@ -111,6 +119,15 @@ function parseServices(value) {
     .filter(Boolean);
 }
 
+function parsePrice(value) {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
 function buildWhere(query) {
   const where = {};
 
@@ -140,6 +157,28 @@ function buildWhere(query) {
     };
   }
 
+  if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+    where.price = {};
+
+    if (query.minPrice !== undefined && query.minPrice !== "") {
+      const minPrice = Number(query.minPrice);
+      if (Number.isFinite(minPrice)) {
+        where.price[Op.gte] = minPrice;
+      }
+    }
+
+    if (query.maxPrice !== undefined && query.maxPrice !== "") {
+      const maxPrice = Number(query.maxPrice);
+      if (Number.isFinite(maxPrice)) {
+        where.price[Op.lte] = maxPrice;
+      }
+    }
+
+    if (Object.keys(where.price).length === 0) {
+      delete where.price;
+    }
+  }
+
   if (query.search) {
     const search = String(query.search).trim();
     where[Op.or] = [
@@ -155,13 +194,30 @@ function buildWhere(query) {
   return where;
 }
 
-async function validateCategorySubcategory(categoryId, subcategoryId) {
-  const category = await Category.findByPk(categoryId);
+async function resolveCategorySubcategory(categoryId, subcategoryId, transaction) {
+  const category = await Category.findByPk(categoryId, { transaction });
   if (!category) {
     throw new ApiError(404, "Category not found");
   }
 
-  const subcategory = await Subcategory.findByPk(subcategoryId);
+  if (subcategoryId === undefined || subcategoryId === null || subcategoryId === "") {
+    const generalSubcategory = await getOrCreateGeneralSubcategory(category, transaction);
+    return {
+      category,
+      subcategory: generalSubcategory,
+    };
+  }
+
+  const numericSubcategoryId = Number(subcategoryId);
+  if (!Number.isFinite(numericSubcategoryId) || numericSubcategoryId <= 0) {
+    const generalSubcategory = await getOrCreateGeneralSubcategory(category, transaction);
+    return {
+      category,
+      subcategory: generalSubcategory,
+    };
+  }
+
+  const subcategory = await Subcategory.findByPk(numericSubcategoryId, { transaction });
   if (!subcategory) {
     throw new ApiError(404, "Subcategory not found");
   }
@@ -169,6 +225,11 @@ async function validateCategorySubcategory(categoryId, subcategoryId) {
   if (Number(subcategory.categoryId) !== Number(categoryId)) {
     throw new ApiError(400, "Selected subcategory does not belong to selected category");
   }
+
+  return {
+    category,
+    subcategory,
+  };
 }
 
 async function getOrCreateCategoryForDefaults(name, transaction) {
@@ -219,8 +280,6 @@ async function getOrCreateGeneralSubcategory(category, transaction) {
 const createBusiness = asyncHandler(async (req, res) => {
   const data = req.body;
 
-  await validateCategorySubcategory(data.categoryId, data.subcategoryId);
-
   const finalSlug = await generateUniqueSlug(Business, data.slug || data.businessName);
 
   const logoPath = req.files?.logo?.[0] ? toPublicFilePath(req.files.logo[0].path) : null;
@@ -230,12 +289,20 @@ const createBusiness = asyncHandler(async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const { subcategory } = await resolveCategorySubcategory(
+      Number(data.categoryId),
+      data.subcategoryId,
+      transaction,
+    );
+
     const business = await Business.create(
       {
         categoryId: Number(data.categoryId),
-        subcategoryId: Number(data.subcategoryId),
+        subcategoryId: subcategory.id,
         businessName: data.businessName.trim(),
         slug: finalSlug,
+        price: parsePrice(data.price),
+        priceLabel: data.priceLabel ? String(data.priceLabel).trim() : null,
         logo: logoPath,
         banner: bannerPath,
         mobile: data.mobile,
@@ -299,6 +366,23 @@ const seedYashaswiniDefaults = asyncHandler(async (_req, res) => {
       // eslint-disable-next-line no-await-in-loop
       const existing = await Business.findOne({ where: { slug: item.slug }, transaction });
       if (existing) {
+        let updatedExisting = false;
+
+        if ((existing.price === null || existing.price === undefined) && item.price !== undefined) {
+          existing.price = item.price;
+          updatedExisting = true;
+        }
+
+        if (!existing.priceLabel && item.priceLabel) {
+          existing.priceLabel = item.priceLabel;
+          updatedExisting = true;
+        }
+
+        if (updatedExisting) {
+          // eslint-disable-next-line no-await-in-loop
+          await existing.save({ transaction });
+        }
+
         skipped.push(item.slug);
         // eslint-disable-next-line no-continue
         continue;
@@ -320,6 +404,8 @@ const seedYashaswiniDefaults = asyncHandler(async (_req, res) => {
           subcategoryId: subcategory.id,
           businessName: item.businessName,
           slug: item.slug,
+          price: item.price,
+          priceLabel: item.priceLabel,
           logo: item.image,
           banner: item.image,
           mobile: item.mobile,
@@ -420,13 +506,13 @@ const updateBusiness = asyncHandler(async (req, res) => {
 
   const data = req.body;
 
-  const nextCategoryId = data.categoryId !== undefined ? Number(data.categoryId) : business.categoryId;
-  const nextSubcategoryId =
+  let nextCategoryId = data.categoryId !== undefined ? Number(data.categoryId) : business.categoryId;
+  let nextSubcategoryId =
     data.subcategoryId !== undefined ? Number(data.subcategoryId) : business.subcategoryId;
 
-  if (data.categoryId !== undefined || data.subcategoryId !== undefined) {
-    await validateCategorySubcategory(nextCategoryId, nextSubcategoryId);
-  }
+  const categoryChanged = data.categoryId !== undefined && Number(data.categoryId) !== Number(business.categoryId);
+  const shouldResolveSubcategory =
+    data.subcategoryId !== undefined || categoryChanged;
 
   const logoPath = req.files?.logo?.[0] ? toPublicFilePath(req.files.logo[0].path) : null;
   const bannerPath = req.files?.banner?.[0] ? toPublicFilePath(req.files.banner[0].path) : null;
@@ -480,6 +566,14 @@ const updateBusiness = asyncHandler(async (req, res) => {
     business.services = parseServices(data.services);
   }
 
+  if (data.price !== undefined) {
+    business.price = parsePrice(data.price);
+  }
+
+  if (data.priceLabel !== undefined) {
+    business.priceLabel = data.priceLabel === "" ? null : String(data.priceLabel).trim();
+  }
+
   if (data.featured !== undefined) {
     business.featured = parseBoolean(data.featured, business.featured);
   }
@@ -499,6 +593,17 @@ const updateBusiness = asyncHandler(async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
+    if (shouldResolveSubcategory) {
+      const requestedSubcategoryId = data.subcategoryId !== undefined ? data.subcategoryId : undefined;
+      const { subcategory } = await resolveCategorySubcategory(
+        nextCategoryId,
+        requestedSubcategoryId,
+        transaction,
+      );
+      nextSubcategoryId = subcategory.id;
+      business.subcategoryId = nextSubcategoryId;
+    }
+
     await business.save({ transaction });
 
     if (galleryFiles.length > 0) {

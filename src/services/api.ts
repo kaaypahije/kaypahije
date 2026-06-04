@@ -57,6 +57,8 @@ export interface ListQuery {
   subcategoryId?: number;
   city?: string;
   verified?: string;
+  minPrice?: number | string;
+  maxPrice?: number | string;
 }
 
 function buildQuery(query: ListQuery = {}) {
@@ -96,6 +98,17 @@ export function updateCategory(token: string, id: number, formData: FormData) {
 export function deleteCategory(token: string, id: number) {
   return request<{ success: boolean; message: string }>(`/api/categories/${id}`, {
     method: "DELETE",
+    token,
+  });
+}
+
+export function syncYashaswiniCategories(token: string) {
+  return request<{
+    success: boolean;
+    message: string;
+    data: { created: string[]; skipped: string[] };
+  }>("/api/categories/sync-yashaswini", {
+    method: "POST",
     token,
   });
 }

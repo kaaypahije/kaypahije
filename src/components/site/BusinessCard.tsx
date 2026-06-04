@@ -1,6 +1,11 @@
 import { MapPin, Phone, BadgeCheck, MessageCircle, Navigation, IndianRupee } from "lucide-react";
 import { Link } from "react-router-dom";
-import { businessImage, isYashaswiniMartCategoryName, type Business } from "@/data/businesses";
+import {
+  businessImage,
+  isYashaswiniMartCategoryName,
+  normalizeCardPriceText,
+  type Business,
+} from "@/data/businesses";
 
 export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) {
   const directionLink =
@@ -50,7 +55,7 @@ export function BusinessCard({ b, index = 0 }: { b: Business; index?: number }) 
         {isYashaswiniMartCategoryName(b.category) ? (
           <div className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full border border-[#ffd8b0] bg-[#fff6ec] px-3 py-1 text-sm font-semibold text-[#c96a00]">
             <IndianRupee className="h-3.5 w-3.5" />
-            <span>{b.price || "Price on request"}</span>
+            <span>{normalizeCardPriceText(b.price)}</span>
           </div>
         ) : null}
 

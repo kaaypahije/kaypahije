@@ -12,11 +12,13 @@ const {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  syncYashaswiniCategories,
 } = require("../controllers/category.controller");
 
 const router = express.Router();
 
 router.get("/", getCategories);
+router.post("/sync-yashaswini", requireAuth, syncYashaswiniCategories);
 router.get("/:id", getCategoryById);
 router.post("/", requireAuth, categoryUpload, createCategoryValidator, validateRequest, createCategory);
 router.put(

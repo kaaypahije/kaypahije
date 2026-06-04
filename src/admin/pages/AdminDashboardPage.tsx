@@ -139,9 +139,15 @@ export function AdminDashboardPage() {
 
       <SectionCard
         title="Yashaswini Mart Controls"
-        subtitle="Manage Yashaswini Mart listings from admin"
+        subtitle="Manage Yashaswini Mart categories and listings from admin"
       >
         <div className="flex flex-wrap gap-3">
+          <Link
+            to="/admin/categories?segment=yashaswini"
+            className="inline-flex items-center rounded-xl border border-[#dfe6f4] bg-white px-4 py-2.5 text-sm font-semibold text-[#41527d]"
+          >
+            Manage Yashaswini Categories
+          </Link>
           <Link
             to="/admin/businesses?segment=yashaswini"
             className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#f28a32] to-[#ffb16a] px-4 py-2.5 text-sm font-semibold text-white"

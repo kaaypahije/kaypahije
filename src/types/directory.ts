@@ -39,6 +39,7 @@ export interface Business {
   businessName: string;
   slug: string;
   price?: string | null;
+  priceLabel?: string | null;
   logo: string | null;
   banner: string | null;
   mobile: string;

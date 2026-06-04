@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Pencil, Trash2, ImageIcon } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { Category } from "@/types/directory";
 import {
   createCategory,
   deleteCategory,
   fetchCategories,
+  syncYashaswiniCategories,
   updateCategory,
 } from "@/services/api";
 import { getApiBaseUrl } from "@/services/http";
@@ -15,6 +17,7 @@ import { SectionCard } from "@/admin/components/SectionCard";
 import { TableToolbar } from "@/admin/components/TableToolbar";
 import { PaginationControls } from "@/admin/components/PaginationControls";
 import { AdminModal } from "@/admin/components/AdminModal";
+import { allYashaswiniMartCategoryNames, isYashaswiniMartCategoryName } from "@/data/businesses";
 
 type CategoryFormValues = {
   name: string;
@@ -43,6 +46,10 @@ function formatDate(value: string) {
 }
 
 export function AdminCategoriesPage() {
+  const [searchParams] = useSearchParams();
+  const routeSegment = searchParams.get("segment") || "";
+  const isYashaswiniSegment = routeSegment.toLowerCase() === "yashaswini";
+  const attemptedAutoSyncRef = useRef(false);
   const { token } = useAuth();
   const [rows, setRows] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +61,7 @@ export function AdminCategoriesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [currentImagePreview, setCurrentImagePreview] = useState<string>("");
+  const [syncingDefaults, setSyncingDefaults] = useState(false);
 
   const {
     register,
@@ -92,6 +100,57 @@ export function AdminCategoriesPage() {
   async function loadData() {
     try {
       setLoading(true);
+
+      if (isYashaswiniSegment) {
+        let response = await fetchCategories({
+          page: 1,
+          limit: 300,
+          search,
+          status: statusFilter,
+          featured: featuredFilter,
+        });
+
+        let filteredRows = response.data
+          .filter((category) => isYashaswiniMartCategoryName(category.name))
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        if (
+          token &&
+          !search &&
+          !statusFilter &&
+          !featuredFilter &&
+          filteredRows.length < allYashaswiniMartCategoryNames.length &&
+          !attemptedAutoSyncRef.current
+        ) {
+          attemptedAutoSyncRef.current = true;
+          await syncCategoryDefaults(false);
+          response = await fetchCategories({
+            page: 1,
+            limit: 300,
+            search,
+            status: statusFilter,
+            featured: featuredFilter,
+          });
+
+          filteredRows = response.data
+            .filter((category) => isYashaswiniMartCategoryName(category.name))
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }
+
+        const pageSize = 10;
+        const totalPageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+        const boundedPage = Math.min(page, totalPageCount);
+        const offset = (boundedPage - 1) * pageSize;
+
+        if (boundedPage !== page) {
+          setPage(boundedPage);
+        }
+
+        setRows(filteredRows.slice(offset, offset + pageSize));
+        setTotalPages(totalPageCount);
+        return;
+      }
+
       const response = await fetchCategories({
         page,
         limit: 10,
@@ -111,9 +170,43 @@ export function AdminCategoriesPage() {
   }
 
   useEffect(() => {
+    attemptedAutoSyncRef.current = false;
+  }, [isYashaswiniSegment]);
+
+  async function syncCategoryDefaults(showToast = true) {
+    if (!token) {
+      return false;
+    }
+
+    try {
+      setSyncingDefaults(true);
+      const response = await syncYashaswiniCategories(token);
+      const createdCount = response.data.created.length;
+
+      if (showToast) {
+        if (createdCount > 0) {
+          toast.success(`Synced ${createdCount} Yashaswini categories`);
+        } else {
+          toast.success("Yashaswini categories are already synced");
+        }
+      }
+
+      return true;
+    } catch (error) {
+      if (showToast) {
+        const message = error instanceof Error ? error.message : "Failed to sync Yashaswini categories";
+        toast.error(message);
+      }
+      return false;
+    } finally {
+      setSyncingDefaults(false);
+    }
+  }
+
+  useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, statusFilter, featuredFilter]);
+  }, [page, statusFilter, featuredFilter, isYashaswiniSegment]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -215,16 +308,37 @@ export function AdminCategoriesPage() {
   return (
     <>
       <SectionCard
-        title="Category Management"
-        subtitle="Add, edit, filter, and activate/deactivate categories"
+        title={isYashaswiniSegment ? "Yashaswini Category Management" : "Category Management"}
+        subtitle={
+          isYashaswiniSegment
+            ? "Manage the categories used inside Yashaswini Mart"
+            : "Add, edit, filter, and activate/deactivate categories"
+        }
         action={
-          <button
-            type="button"
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f28a32] to-[#ffb16a] px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
-          >
-            <Plus className="h-4 w-4" /> Add Category
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {isYashaswiniSegment ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  const synced = await syncCategoryDefaults(true);
+                  if (synced) {
+                    await loadData();
+                  }
+                }}
+                disabled={syncingDefaults}
+                className="inline-flex items-center gap-2 rounded-xl border border-[#dfe6f4] bg-white px-4 py-2.5 text-sm font-semibold text-[#41527d] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {syncingDefaults ? "Syncing..." : "Sync Yashaswini Categories"}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f28a32] to-[#ffb16a] px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4" /> {isYashaswiniSegment ? "Add Yashaswini Category" : "Add Category"}
+            </button>
+          </div>
         }
       >
         <TableToolbar
@@ -259,6 +373,25 @@ export function AdminCategoriesPage() {
             </div>
           }
         />
+
+        {isYashaswiniSegment ? (
+          <div className="mb-5 rounded-2xl border border-[#edf1f8] bg-[#fafbfe] p-4">
+            <p className="text-sm font-semibold text-[#23325d]">Yashaswini Mart categories</p>
+            <p className="mt-1 text-xs text-[#7f8cae]">
+              Use these category names for the Yashaswini Mart section.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {allYashaswiniMartCategoryNames.map((name) => (
+                <span
+                  key={name}
+                  className="rounded-full border border-[#e2e8f5] bg-white px-3 py-1 text-xs font-semibold text-[#41527d]"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -365,10 +498,15 @@ export function AdminCategoriesPage() {
             <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Category Name *</label>
             <input
               {...register("name", { required: "Category name is required" })}
-              placeholder="e.g. Restaurants"
+              placeholder={isYashaswiniSegment ? "e.g. Supermarket" : "e.g. Restaurants"}
               className="w-full rounded-xl border border-[#e3e8f3] px-3 py-2.5 text-sm outline-none focus:border-[#f39a4f]"
             />
             {errors.name ? <p className="mt-1 text-xs text-red-600">{errors.name.message}</p> : null}
+            {isYashaswiniSegment ? (
+              <p className="mt-1 text-xs text-[#8a96b5]">
+                Suggested names: {allYashaswiniMartCategoryNames.join(", ")}
+              </p>
+            ) : null}
           </div>
 
           <div>

@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   ListTree,
@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/categories", label: "Categories", icon: ListTree },
+  { to: "/admin/categories?segment=yashaswini", label: "Yashaswini Categories", icon: Store },
   { to: "/admin/subcategories", label: "Subcategories", icon: Layers },
   { to: "/admin/businesses", label: "Businesses", icon: Building2 },
   { to: "/admin/businesses?segment=yashaswini", label: "Yashaswini Mart", icon: Store },
@@ -23,6 +24,18 @@ const navItems = [
 export function AdminLayout() {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  function isNavItemActive(target: string, end?: boolean) {
+    const [targetPath, targetSearch = ""] = target.split("?");
+    const normalizedTargetSearch = targetSearch ? `?${targetSearch}` : "";
+
+    if (end) {
+      return location.pathname === targetPath && location.search === normalizedTargetSearch;
+    }
+
+    return location.pathname === targetPath && location.search === normalizedTargetSearch;
+  }
 
   return (
     <div className="min-h-screen bg-[#f7f8fc]">
@@ -51,9 +64,9 @@ export function AdminLayout() {
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) =>
+                className={() =>
                   `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    isActive
+                    isNavItemActive(item.to, item.end)
                       ? "bg-[#fff1e7] text-[#e26f16]"
                       : "text-[#5f6d91] hover:bg-[#f4f7ff] hover:text-[#1f2b52]"
                   }`

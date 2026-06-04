@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const mysql = require("mysql2/promise");
+const { DataTypes } = require("sequelize");
 
 process.chdir(path.resolve(__dirname, ".."));
 
@@ -12,6 +13,25 @@ function ensureUploadFolders() {
   ["categories", "subcategories", "businesses"].forEach((folder) => {
     fs.mkdirSync(path.resolve(process.cwd(), "uploads", folder), { recursive: true });
   });
+}
+
+async function ensureBusinessMartColumns() {
+  const queryInterface = sequelize.getQueryInterface();
+  const table = await queryInterface.describeTable("businesses");
+
+  if (!table.price) {
+    await queryInterface.addColumn("businesses", "price", {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    });
+  }
+
+  if (!table.price_label) {
+    await queryInterface.addColumn("businesses", "price_label", {
+      type: DataTypes.STRING(120),
+      allowNull: true,
+    });
+  }
 }
 
 async function ensureDatabaseExists() {
@@ -34,6 +54,7 @@ async function bootstrap() {
     await ensureDatabaseExists();
     await sequelize.authenticate();
     await sequelize.sync({ alter: false });
+    await ensureBusinessMartColumns();
 
     app.listen(env.port, () => {
       // eslint-disable-next-line no-console
