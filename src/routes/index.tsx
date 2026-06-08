@@ -159,7 +159,7 @@ const defaultHeroSlides = [
 export function HomePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [city, setCity] = useState("Pune");
+  const [city, setCity] = useState("Parbhani");
   const [query, setQuery] = useState("");
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [heroSlides, setHeroSlides] = useState(defaultHeroSlides);

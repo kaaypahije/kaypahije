@@ -82,18 +82,7 @@ const iconMap: Record<string, string> = {
 };
 
 export const cities = [
-  "Mumbai",
-  "Pune",
-  "Delhi",
-  "Bengaluru",
-  "Goa",
-  "Hyderabad",
-  "Chennai",
-  "Kolkata",
-  "Jaipur",
-  "Ahmedabad",
-  "Nagpur",
-  "Nashik",
+  "Parbhani",
 ];
 
 export const trendingSearches = [

@@ -47,10 +47,11 @@ export function PostBusinessPage() {
                   <option key={c.name}>{c.name}</option>
                 ))}
               </select>
-              <select className="w-full rounded-xl bg-secondary px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent">
-                <option>Select city</option>
+              <select defaultValue="Parbhani" className="w-full rounded-xl bg-secondary px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent">
                 {cities.map((c) => (
-                  <option key={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>

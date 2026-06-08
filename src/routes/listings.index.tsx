@@ -23,10 +23,14 @@ function slugifyText(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeCity(value: string | null) {
+  return value === "Parbhani" ? value : "Parbhani";
+}
+
 export function ListingsPage() {
   const [searchParams] = useSearchParams();
   const [q, setQ] = useState(searchParams.get("q") ?? "");
-  const [city, setCity] = useState(searchParams.get("city") ?? "");
+  const [city, setCity] = useState(normalizeCity(searchParams.get("city")));
   const [category, setCategory] = useState(searchParams.get("category") ?? "");
   const [subcategory, setSubcategory] = useState(searchParams.get("subcategory") ?? "");
   const [subcategoryIdParam, setSubcategoryIdParam] = useState(searchParams.get("subcategoryId") ?? "");
@@ -38,7 +42,7 @@ export function ListingsPage() {
 
   useEffect(() => {
     setQ(searchParams.get("q") ?? "");
-    setCity(searchParams.get("city") ?? "");
+    setCity(normalizeCity(searchParams.get("city")));
     setCategory(searchParams.get("category") ?? "");
     setSubcategory(searchParams.get("subcategory") ?? "");
     setSubcategoryIdParam(searchParams.get("subcategoryId") ?? "");
@@ -264,7 +268,6 @@ export function ListingsPage() {
                 onChange={(e) => setCity(e.target.value)}
                 className="bg-transparent text-foreground w-full text-sm focus:outline-none"
               >
-                <option value="">All Cities</option>
                 {cities.map((c) => (
                   <option key={c} value={c}>
                     {c}
