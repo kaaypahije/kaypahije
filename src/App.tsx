@@ -13,10 +13,8 @@ declare global {
 }
 
 const AboutPage = lazy(() => import("@/routes/about").then((module) => ({ default: module.AboutPage })));
-const BlogPage = lazy(() => import("@/routes/blog").then((module) => ({ default: module.BlogPage })));
 const CategoriesPage = lazy(() => import("@/routes/categories").then((module) => ({ default: module.CategoriesPage })));
 const ContactPage = lazy(() => import("@/routes/contact").then((module) => ({ default: module.ContactPage })));
-const FaqPage = lazy(() => import("@/routes/faqs").then((module) => ({ default: module.FaqPage })));
 const HomePage = lazy(() => import("@/routes/index").then((module) => ({ default: module.HomePage })));
 const ListingDetailPage = lazy(() =>
   import("@/routes/listings.$id").then((module) => ({ default: module.ListingDetailPage })),
@@ -130,10 +128,8 @@ function AppShell() {
             <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/blog" element={<BlogPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/faqs" element={<FaqPage />} />
             <Route path="/listings" element={<ListingsPage />} />
             <Route path="/listings/:id" element={<ListingDetailPage />} />
             <Route path="/login" element={<LoginPage />} />

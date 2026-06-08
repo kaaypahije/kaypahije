@@ -9,7 +9,6 @@ import {
   Sparkles,
   ArrowRight,
   Quote,
-  ChevronDown,
   Shield,
   Zap,
   Heart,
@@ -83,29 +82,6 @@ const testimonials = [
     role: "Bengaluru",
     text: "As a small business owner, Kay Pahije brought me 3x more leads in a month.",
     rating: 5,
-  },
-];
-
-const faqs = [
-  {
-    q: "How do I list my business on Kay Pahije?",
-    a: "Click 'Post Business' in the header, fill in your details, and our team will verify and publish your listing within 24 hours.",
-  },
-  {
-    q: "Is it free to list a business?",
-    a: "Yes! Basic listings are completely free. We also offer premium plans with featured placement and lead management.",
-  },
-  {
-    q: "How are businesses verified?",
-    a: "We manually verify each business by phone, email, and documents to ensure authenticity for our users.",
-  },
-  {
-    q: "Can I edit my listing later?",
-    a: "Absolutely. Log in to your business dashboard anytime to update photos, hours, contact info and services.",
-  },
-  {
-    q: "How do I report a wrong listing?",
-    a: "Every business detail page has a 'Report' option. Our moderation team responds within 12 hours.",
   },
 ];
 
@@ -769,43 +745,7 @@ export function HomePage() {
       </DeferredSection>
 
       <DeferredSection
-        className="mx-auto max-w-4xl px-4 md:px-6 py-16 md:py-24"
-        placeholder={
-          <div className="rounded-3xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-            FAQ loads lower on the page.
-          </div>
-        }
-      >
-        <section>
-          <SectionHeader
-            eyebrow="FAQ"
-            title="Frequently Asked Questions"
-            subtitle="Everything you need to know about Kay Pahije."
-          />
-          <div className="mt-10 space-y-3">
-            {faqs.map((f, i) => (
-              <button
-                key={i}
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full text-left rounded-2xl bg-card border border-border p-5 hover:border-accent/40 transition-colors"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-semibold text-foreground">{f.q}</h3>
-                  <ChevronDown
-                    className={`h-5 w-5 text-accent shrink-0 transition-transform ${openFaq === i ? "rotate-180" : ""}`}
-                  />
-                </div>
-                {openFaq === i && (
-                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
-                )}
-              </button>
-            ))}
-          </div>
-        </section>
-      </DeferredSection>
-
-      <DeferredSection
-        className="mx-auto max-w-7xl px-4 md:px-6 pb-16 md:pb-24"
+        className="mx-auto max-w-7xl px-4 md:px-6 mt-8 md:mt-12 pb-16 md:pb-24"
         placeholder={
           <div className="rounded-4xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
             Radio and final CTA load at the end.

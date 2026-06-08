@@ -7,10 +7,9 @@ const nav = [
   { to: "/", label: "Home" },
   { to: "/categories", label: "Categories" },
   { to: "/yashaswini-mart", label: "Yashaswini Mart" },
-  { to: "/listings", label: "Listings" },
-  { to: "/blog", label: "Blog" },
-  { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
+  { to: "/listings", label: "Business Listings" },
+  { to: "/about", label: "About Us" },
+  { to: "/contact", label: "Contact Us" },
 ];
 
 export function Header() {
@@ -63,7 +62,7 @@ export function Header() {
             to="/contact"
             className="inline-flex items-center gap-1.5 rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-soft hover:shadow-glow transition-all hover:-translate-y-0.5"
           >
-            <PlusCircle className="h-4 w-4" /> Register your business
+            <PlusCircle className="h-4 w-4" /> Post Your Business
           </Link>
         </div>
 
@@ -95,7 +94,7 @@ export function Header() {
                 to="/contact"
                 className="rounded-full bg-gradient-accent px-4 py-2 text-center text-sm font-semibold text-accent-foreground"
               >
-                Register your business
+                Post Your Business
               </Link>
             </div>
           </div>

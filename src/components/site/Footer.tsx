@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { ExternalLink, Mail, MapPin, Phone } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 
 const links = {
   Company: [
+    { to: "/", label: "Home" },
+    { to: "/categories", label: "Categories" },
+    { to: "/yashaswini-mart", label: "Yashaswini Mart" },
+    { to: "/listings", label: "Business Listings" },
     { to: "/about", label: "About Us" },
-    { to: "/contact", label: "Contact" },
-    { to: "/blog", label: "Blog" },
-    { to: "/post-business", label: "Post Business" },
+    { to: "/contact", label: "Contact Us" },
   ],
   Explore: [
     { to: "/categories", label: "All Categories" },
@@ -16,17 +18,14 @@ const links = {
     { to: "/listings?category=Restaurants", label: "Restaurants" },
     { to: "/listings?category=Hotels", label: "Hotels" },
   ],
-  Support: [
-    { to: "/faqs", label: "FAQs" },
-    { to: "/privacy", label: "Privacy Policy" },
-    { to: "/terms", label: "Terms & Conditions" },
-    { to: "/contact", label: "Help Center" },
-  ],
 };
 
 export function Footer() {
   const [showRadioTooltip, setShowRadioTooltip] = useState(false);
   const radioTooltipTimerRef = useRef<number | null>(null);
+  const mapQuery = "Pune, Maharashtra, India";
+  const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=12&output=embed`;
+  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
 
   useEffect(() => {
     return () => {
@@ -138,6 +137,39 @@ export function Footer() {
               </ul>
             </div>
           ))}
+
+          <div className="lg:col-span-1">
+            <h4 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-accent mb-2">
+              Our Location
+            </h4>
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-soft">
+              <div className="relative h-40 md:h-44">
+                <iframe
+                  title="Kay Pahije location map"
+                  src={mapEmbedUrl}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="absolute inset-0 h-full w-full"
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent p-2.5">
+                  <div className="flex items-end justify-between gap-2">
+                    <div className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow-soft">
+                      <MapPin className="h-3 w-3 text-accent" />
+                      Pune, Maharashtra
+                    </div>
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="pointer-events-auto inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      Directions <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-4 flex items-center justify-center border-t border-white/10 pt-2.5 text-[11px] md:text-xs text-primary-foreground/60">
