@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     q: "How do I report an issue?",
-    a: "Use the Report option on any business page, or email hello@kaypahije.com.",
+    a: "Use the Report option on any business page, or email kaaypahije@gmail.com.",
   },
   {
     q: "Do you offer ads or featured placement?",

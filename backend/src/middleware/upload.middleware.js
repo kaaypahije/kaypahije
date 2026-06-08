@@ -2,9 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const ApiError = require("../utils/ApiError");
+const env = require("../config/env");
 
 function ensureDir(folder) {
-  const fullPath = path.resolve(process.cwd(), "uploads", folder);
+  const fullPath = path.resolve(env.uploadsDir, folder);
   fs.mkdirSync(fullPath, { recursive: true });
   return fullPath;
 }
@@ -51,6 +52,10 @@ const businessUpload = createUploader("businesses").fields([
   { name: "banner", maxCount: 1 },
   { name: "gallery", maxCount: 15 },
 ]);
+const siteSettingUpload = createUploader("site").fields([
+  { name: "heroBannerPrimary", maxCount: 1 },
+  { name: "heroBannerSecondary", maxCount: 1 },
+]);
 
 function handleMulterErrors(err, _req, _res, next) {
   if (!err) {
@@ -70,5 +75,6 @@ module.exports = {
   categoryUpload,
   subcategoryUpload,
   businessUpload,
+  siteSettingUpload,
   handleMulterErrors,
 };

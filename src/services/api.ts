@@ -4,6 +4,7 @@ import type {
   Business,
   Category,
   DashboardStats,
+  HeroSettings,
   Subcategory,
 } from "@/types/directory";
 import { request } from "./http";
@@ -46,6 +47,19 @@ export function fetchDashboardStats(token: string) {
   return request<{ success: boolean; data: DashboardStats }>("/api/dashboard/stats", { token });
 }
 
+export function fetchHeroSettings() {
+  return request<{ success: boolean; data: HeroSettings }>("/api/site-settings/hero");
+}
+
+export function updateHeroSettings(token: string, formData: FormData) {
+  return request<{ success: boolean; message: string; data: HeroSettings }>("/api/site-settings/hero", {
+    method: "PUT",
+    body: formData,
+    token,
+    isFormData: true,
+  });
+}
+
 export interface ListQuery {
   page?: number;
   limit?: number;
@@ -57,6 +71,8 @@ export interface ListQuery {
   subcategoryId?: number;
   city?: string;
   verified?: string;
+  minPrice?: number | string;
+  maxPrice?: number | string;
 }
 
 function buildQuery(query: ListQuery = {}) {
@@ -96,6 +112,17 @@ export function updateCategory(token: string, id: number, formData: FormData) {
 export function deleteCategory(token: string, id: number) {
   return request<{ success: boolean; message: string }>(`/api/categories/${id}`, {
     method: "DELETE",
+    token,
+  });
+}
+
+export function syncYashaswiniCategories(token: string) {
+  return request<{
+    success: boolean;
+    message: string;
+    data: { created: string[]; skipped: string[] };
+  }>("/api/categories/sync-yashaswini", {
+    method: "POST",
     token,
   });
 }

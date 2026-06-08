@@ -53,7 +53,7 @@ export function AdminLoginPage() {
             <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Email</label>
             <input
               type="email"
-              placeholder="admin@kaypahije.com"
+              placeholder="kaaypahije@gmail.com"
               {...register("email", { required: "Email is required" })}
               className="w-full rounded-xl border border-[#e3e8f3] px-3 py-2.5 text-sm text-[#1f2b52] outline-none transition focus:border-[#f39a4f] focus:ring-2 focus:ring-[#ffd6b5]"
             />

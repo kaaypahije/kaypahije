@@ -34,7 +34,8 @@ import {
   type SiteCategory,
   type SiteSubcategory,
 } from "@/data/businesses";
-import { fetchBusinesses, fetchFeaturedBusinesses, fetchSubcategoriesByCategory } from "@/services/api";
+import { fetchBusinesses, fetchFeaturedBusinesses, fetchHeroSettings, fetchSubcategoriesByCategory } from "@/services/api";
+import { buildApiUrl } from "@/services/http";
 
 const stats = [
   { value: "35,000", label: "Happy Users", icon: Users },
@@ -116,12 +117,52 @@ function listingsUrl(params: { q?: string; city?: string }) {
   return q ? `/listings?${q}` : "/listings";
 }
 
+function resolveHeroImage(path: string | null | undefined) {
+  if (!path) {
+    return "";
+  }
+
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  return buildApiUrl(path);
+}
+
+const defaultHeroSlides = [
+  {
+    badge: "India's Modern Business Directory",
+    headingTop: "Tumhala kay pahije?",
+    headingBottom: "We'll find it for you.",
+    description:
+      "Discover 1M+ verified local businesses across India. Restaurants, services, hospitals, hotels - all in one beautifully simple place.",
+    points: ["100% Verified", "Top Locations", "Affordable Options", "24/7 Support"],
+    rightLabel: "Trusted Across India",
+    rightValue: "1M+ Listings",
+    heroImage:
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    badge: "Find Local. Choose Smart.",
+    headingTop: "Trusted businesses are just one search away.",
+    headingBottom: "",
+    description:
+      "Explore verified restaurants, hospitals, hotels, shops, and services near you - faster, easier, and all in one place.",
+    points: ["Fast Search", "Rated Businesses", "Instant Contact", "Easy Compare"],
+    rightLabel: "Search Smarter",
+    rightValue: "500+ Cities",
+    heroImage:
+      "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80",
+  },
+];
+
 export function HomePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [city, setCity] = useState("Pune");
   const [query, setQuery] = useState("");
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
+  const [heroSlides, setHeroSlides] = useState(defaultHeroSlides);
   const [featuredCards, setFeaturedCards] = useState<Business[]>([]);
   const [popularCards, setPopularCards] = useState<Business[]>([]);
   const [yashaswiniCards, setYashaswiniCards] = useState<Business[]>([]);
@@ -132,33 +173,6 @@ export function HomePage() {
   const [loadingSubcategories, setLoadingSubcategories] = useState(false);
   const subcategoryRequestRef = useRef(0);
 
-  const heroSlides = [
-    {
-      badge: "India's Modern Business Directory",
-      headingTop: "Tumhala kay pahije?",
-      headingBottom: "We'll find it for you.",
-      description:
-        "Discover 1M+ verified local businesses across India. Restaurants, services, hospitals, hotels - all in one beautifully simple place.",
-      points: ["100% Verified", "Top Locations", "Affordable Options", "24/7 Support"],
-      rightLabel: "Trusted Across India",
-      rightValue: "1M+ Listings",
-      heroImage:
-        "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-      badge: "Find Local. Choose Smart.",
-      headingTop: "Trusted businesses are just one search away.",
-      headingBottom: "",
-      description:
-        "Explore verified restaurants, hospitals, hotels, shops, and services near you - faster, easier, and all in one place.",
-      points: ["Fast Search", "Rated Businesses", "Instant Contact", "Easy Compare"],
-      rightLabel: "Search Smarter",
-      rightValue: "500+ Cities",
-      heroImage:
-        "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80",
-    },
-  ];
-
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveHeroSlide((prev) => (prev + 1) % heroSlides.length);
@@ -166,6 +180,44 @@ export function HomePage() {
 
     return () => clearInterval(timer);
   }, [heroSlides.length]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadHeroSettings() {
+      try {
+        const response = await fetchHeroSettings();
+        if (!active) {
+          return;
+        }
+
+        setHeroSlides([
+          {
+            ...defaultHeroSlides[0],
+            heroImage: response.data.heroBannerPrimary
+              ? resolveHeroImage(response.data.heroBannerPrimary)
+              : defaultHeroSlides[0].heroImage,
+          },
+          {
+            ...defaultHeroSlides[1],
+            heroImage: response.data.heroBannerSecondary
+              ? resolveHeroImage(response.data.heroBannerSecondary)
+              : defaultHeroSlides[1].heroImage,
+          },
+        ]);
+      } catch (_error) {
+        if (active) {
+          setHeroSlides(defaultHeroSlides);
+        }
+      }
+    }
+
+    loadHeroSettings();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onEsc = (event: KeyboardEvent) => {
@@ -467,6 +519,7 @@ export function HomePage() {
             <CategoryGrid
               limit={8}
               mode="home"
+              excludeSlugs={["beauty-salon", "home-services"]}
               onCategoryClick={handleCategoryClick}
               activeCategory={selectedCategory?.slug || ""}
             />
@@ -632,45 +685,6 @@ export function HomePage() {
                 No listings found right now.
               </div>
             )}
-          </div>
-        </section>
-      </DeferredSection>
-
-      <DeferredSection
-        className="bg-gradient-soft py-16 md:py-24"
-        placeholder={
-          <div className="mx-auto max-w-7xl px-4 md:px-6">
-            <div className="rounded-3xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-              More sections load as needed.
-            </div>
-          </div>
-        }
-      >
-        <section>
-          <div className="mx-auto max-w-7xl px-4 md:px-6">
-            <SectionHeader
-              eyebrow="Explore"
-              title="Popular Cities"
-              subtitle="Find the best businesses in India's top cities."
-            />
-            <div className="mt-10 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {cities.map((c, i) => (
-                <Link
-                  key={c}
-                  to={listingsUrl({ city: c })}
-                  className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover-lift animate-fade-up"
-                  style={{ animationDelay: `${i * 30}ms` }}
-                >
-                  <div className="h-10 w-10 rounded-xl bg-gradient-accent grid place-items-center text-accent-foreground shrink-0">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm truncate">{c}</p>
-                    <p className="text-xs text-muted-foreground">Explore</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
           </div>
         </section>
       </DeferredSection>

@@ -24,6 +24,8 @@ import { isYashaswiniMartCategoryName } from "@/data/businesses";
 type BusinessFormValues = {
   businessName: string;
   slug: string;
+  price: string;
+  priceLabel: string;
   categoryId: number;
   subcategoryId: number;
   mobile: string;
@@ -70,6 +72,22 @@ function formatDate(value: string) {
   });
 }
 
+function formatBusinessPrice(price: string | null | undefined, priceLabel: string | null | undefined) {
+  if (!price) {
+    return "-";
+  }
+
+  const numericValue = Number(price);
+  const formattedAmount = Number.isFinite(numericValue)
+    ? new Intl.NumberFormat("en-IN", {
+        minimumFractionDigits: Number.isInteger(numericValue) ? 0 : 2,
+        maximumFractionDigits: 2,
+      }).format(numericValue)
+    : price;
+
+  return [`₹${formattedAmount}`, priceLabel].filter(Boolean).join(" ");
+}
+
 export function AdminBusinessesPage() {
   const [searchParams] = useSearchParams();
   const routeSegment = searchParams.get("segment") || "";
@@ -86,6 +104,8 @@ export function AdminBusinessesPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [subcategoryFilter, setSubcategoryFilter] = useState("");
+  const [minPriceFilter, setMinPriceFilter] = useState("");
+  const [maxPriceFilter, setMaxPriceFilter] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
@@ -106,6 +126,8 @@ export function AdminBusinessesPage() {
     defaultValues: {
       businessName: "",
       slug: "",
+      price: "",
+      priceLabel: "",
       categoryId: 0,
       subcategoryId: 0,
       mobile: "",
@@ -135,6 +157,10 @@ export function AdminBusinessesPage() {
   const watchedLogo = watch("logo");
   const watchedBanner = watch("banner");
   const watchedCategoryId = watch("categoryId");
+  const selectedFormCategory = useMemo(
+    () => categories.find((category) => category.id === Number(watchedCategoryId)) || null,
+    [categories, watchedCategoryId],
+  );
 
   const yashaswiniCategoryIds = useMemo(
     () =>
@@ -146,6 +172,10 @@ export function AdminBusinessesPage() {
 
   const isYashaswiniMode =
     isYashaswiniSegment || categoryFilter === YASHASWINI_FILTER_VALUE;
+  const canAutoAssignSubcategory =
+    !isYashaswiniMode &&
+    Number(watchedCategoryId) > 0 &&
+    subcategoryOptions.length === 0;
 
   const formCategories = useMemo(() => {
     if (!isYashaswiniMode) {
@@ -241,6 +271,8 @@ export function AdminBusinessesPage() {
           status: statusFilter,
           categoryId,
           subcategoryId: selectedSubcategoryId,
+          minPrice: minPriceFilter || undefined,
+          maxPrice: maxPriceFilter || undefined,
         }),
       ),
     );
@@ -333,6 +365,8 @@ export function AdminBusinessesPage() {
             ? Number(categoryFilter)
             : undefined,
         subcategoryId: subcategoryFilter ? Number(subcategoryFilter) : undefined,
+        minPrice: isYashaswiniMode ? minPriceFilter || undefined : undefined,
+        maxPrice: isYashaswiniMode ? maxPriceFilter || undefined : undefined,
       });
       setRows(response.data);
       setTotalPages(response.pagination.totalPages || 1);
@@ -388,7 +422,7 @@ export function AdminBusinessesPage() {
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, minPriceFilter, maxPriceFilter]);
 
   useEffect(() => {
     if (watchedCategoryId) {
@@ -410,6 +444,8 @@ export function AdminBusinessesPage() {
     reset({
       businessName: "",
       slug: "",
+      price: "",
+      priceLabel: "",
       categoryId: firstCategoryId,
       subcategoryId: 0,
       mobile: "",
@@ -453,6 +489,8 @@ export function AdminBusinessesPage() {
     reset({
       businessName: business.businessName,
       slug: business.slug,
+      price: business.price || "",
+      priceLabel: business.priceLabel || "",
       categoryId: business.categoryId,
       subcategoryId: business.subcategoryId,
       mobile: business.mobile,
@@ -493,10 +531,14 @@ export function AdminBusinessesPage() {
       formData.append("slug", values.slug);
     }
     formData.append("categoryId", String(values.categoryId));
-    formData.append("subcategoryId", String(values.subcategoryId));
+    if (values.subcategoryId > 0) {
+      formData.append("subcategoryId", String(values.subcategoryId));
+    }
     formData.append("mobile", values.mobile);
 
     const optionalTextFields: Array<[string, string]> = [
+      ["price", values.price],
+      ["priceLabel", values.priceLabel],
       ["whatsapp", values.whatsapp],
       ["email", values.email],
       ["website", values.website],
@@ -615,7 +657,7 @@ export function AdminBusinessesPage() {
                 disabled={importingDefaults}
                 className="inline-flex items-center gap-2 rounded-xl border border-[#dfe6f4] bg-white px-4 py-2.5 text-sm font-semibold text-[#41527d] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {importingDefaults ? "Importing..." : "Import Default 4"}
+                {importingDefaults ? "Importing..." : "Import Starter Listings"}
               </button>
             ) : null}
             <button
@@ -680,6 +722,29 @@ export function AdminBusinessesPage() {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
+
+              {isYashaswiniMode ? (
+                <>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={minPriceFilter}
+                    onChange={(event) => setMinPriceFilter(event.target.value)}
+                    placeholder="Min price"
+                    className="rounded-xl border border-[#e3e8f3] bg-white px-3 py-2 text-sm text-[#42527c]"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={maxPriceFilter}
+                    onChange={(event) => setMaxPriceFilter(event.target.value)}
+                    placeholder="Max price"
+                    className="rounded-xl border border-[#e3e8f3] bg-white px-3 py-2 text-sm text-[#42527c]"
+                  />
+                </>
+              ) : null}
             </div>
           }
         />
@@ -690,6 +755,7 @@ export function AdminBusinessesPage() {
               <tr className="border-b border-[#edf0f7] text-[#7584a9]">
                 <th className="px-3 py-3 font-semibold">Business</th>
                 <th className="px-3 py-3 font-semibold">Category</th>
+                <th className="px-3 py-3 font-semibold">Price</th>
                 <th className="px-3 py-3 font-semibold">Contact</th>
                 <th className="px-3 py-3 font-semibold">Location</th>
                 <th className="px-3 py-3 font-semibold">Flags</th>
@@ -701,13 +767,13 @@ export function AdminBusinessesPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-8 text-center text-[#7a89ad]">
+                  <td colSpan={9} className="px-3 py-8 text-center text-[#7a89ad]">
                     Loading businesses...
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-8 text-center text-[#7a89ad]">
+                  <td colSpan={9} className="px-3 py-8 text-center text-[#7a89ad]">
                     No businesses found.
                   </td>
                 </tr>
@@ -736,6 +802,11 @@ export function AdminBusinessesPage() {
                     <td className="px-3 py-3 text-[#62729a]">
                       <p>{business.category?.name || "-"}</p>
                       <p className="text-xs text-[#93a0bd]">{business.subcategory?.name || "-"}</p>
+                    </td>
+                    <td className="px-3 py-3 text-[#62729a]">
+                      <span className="font-semibold text-[#22315a]">
+                        {formatBusinessPrice(business.price, business.priceLabel)}
+                      </span>
                     </td>
                     <td className="px-3 py-3 text-[#62729a]">
                       <p className="inline-flex items-center gap-1">
@@ -867,32 +938,56 @@ export function AdminBusinessesPage() {
                 ) : null}
                 {isYashaswiniMode && formCategories.length === 0 ? (
                   <p className="mt-1 text-xs text-[#8a96b5]">
-                    Add one of these categories first: Supermarket, Home Essentials, Snacks & Beverages, Personal Care.
+                    Add a Yashaswini Mart category first from Category Management, then create listings here.
+                  </p>
+                ) : null}
+                {isYashaswiniMode ? (
+                  <p className="mt-1 text-xs text-[#8a96b5]">
+                    Subcategory is auto-assigned for Yashaswini Mart listings.
                   </p>
                 ) : null}
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Subcategory *</label>
-                <select
-                  {...register("subcategoryId", {
-                    required: "Subcategory is required",
-                    valueAsNumber: true,
-                    min: { value: 1, message: "Please select a subcategory" },
-                  })}
-                  className="w-full rounded-xl border border-[#e3e8f3] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f39a4f]"
-                >
-                  <option value={0}>Select subcategory</option>
-                  {subcategoryOptions.map((subcategory) => (
-                    <option key={subcategory.id} value={subcategory.id}>
-                      {subcategory.name}
+              {isYashaswiniMode ? null : (
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Subcategory *</label>
+                  <select
+                    {...register("subcategoryId", {
+                      valueAsNumber: true,
+                      validate: (value) => {
+                        if (canAutoAssignSubcategory || Number(watchedCategoryId) === 0) {
+                          return true;
+                        }
+                        return value > 0 || "Please select a subcategory";
+                      },
+                    })}
+                    disabled={Number(watchedCategoryId) === 0 || canAutoAssignSubcategory}
+                    className="w-full rounded-xl border border-[#e3e8f3] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f39a4f]"
+                  >
+                    <option value={0}>
+                      {Number(watchedCategoryId) === 0
+                        ? "Select category first"
+                        : canAutoAssignSubcategory
+                          ? "No subcategories available"
+                          : "Select subcategory"}
                     </option>
-                  ))}
-                </select>
-                {errors.subcategoryId ? (
-                  <p className="mt-1 text-xs text-red-600">{errors.subcategoryId.message}</p>
-                ) : null}
-              </div>
+                    {subcategoryOptions.map((subcategory) => (
+                      <option key={subcategory.id} value={subcategory.id}>
+                        {subcategory.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.subcategoryId ? (
+                    <p className="mt-1 text-xs text-red-600">{errors.subcategoryId.message}</p>
+                  ) : null}
+                  {canAutoAssignSubcategory ? (
+                    <p className="mt-1 text-xs text-[#8a96b5]">
+                      No subcategories exist for {selectedFormCategory?.name || "this category"} yet. Saving will
+                      auto-assign a General subcategory.
+                    </p>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
 
@@ -1005,6 +1100,30 @@ export function AdminBusinessesPage() {
           <div>
             <h3 className="mb-3 text-sm font-bold uppercase tracking-[0.13em] text-[#8390b2]">Business Details</h3>
             <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Price</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  {...register("price")}
+                  placeholder="99"
+                  className="w-full rounded-xl border border-[#e3e8f3] px-3 py-2.5 text-sm outline-none focus:border-[#f39a4f]"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Price Note</label>
+                <input
+                  {...register("priceLabel")}
+                  placeholder="onwards / per pack / combo"
+                  className="w-full rounded-xl border border-[#e3e8f3] px-3 py-2.5 text-sm outline-none focus:border-[#f39a4f]"
+                />
+                {isYashaswiniMode ? (
+                  <p className="mt-1 text-xs text-[#8a96b5]">
+                    This appears on the Yashaswini Mart card beside the price.
+                  </p>
+                ) : null}
+              </div>
               <div className="md:col-span-2">
                 <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Description</label>
                 <textarea

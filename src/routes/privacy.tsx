@@ -26,10 +26,10 @@ export function PrivacyPage() {
         <h2 className="text-xl font-bold mt-8">Your rights</h2>
         <p>
           You can access, update or delete your personal information at any time from your dashboard
-          or by emailing hello@kaypahije.com.
+          or by emailing kaaypahije@gmail.com.
         </p>
         <h2 className="text-xl font-bold mt-8">Contact</h2>
-        <p>Questions? Reach us at hello@kaypahije.com.</p>
+        <p>Questions? Reach us at kaaypahije@gmail.com.</p>
       </div>
     </section>
   );

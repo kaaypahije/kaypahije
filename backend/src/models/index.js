@@ -4,6 +4,7 @@ const Category = require("./category.model");
 const Subcategory = require("./subcategory.model");
 const Business = require("./business.model");
 const BusinessGallery = require("./businessGallery.model");
+const SiteSetting = require("./siteSetting.model");
 
 Category.hasMany(Subcategory, {
   as: "subcategories",
@@ -64,4 +65,5 @@ module.exports = {
   Subcategory,
   Business,
   BusinessGallery,
+  SiteSetting,
 };

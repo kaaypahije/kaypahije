@@ -5,16 +5,17 @@ const statusValues = ["active", "inactive"];
 const createBusinessValidator = [
   body("businessName").trim().notEmpty().withMessage("Business name is required"),
   body("slug").optional().trim(),
+  body("price")
+    .optional({ values: "falsy" })
+    .isFloat({ min: 0 })
+    .withMessage("Price must be a positive number"),
+  body("priceLabel").optional().trim(),
   body("categoryId")
     .notEmpty()
     .withMessage("Category is required")
     .isInt({ min: 1 })
     .withMessage("Invalid category ID"),
-  body("subcategoryId")
-    .notEmpty()
-    .withMessage("Subcategory is required")
-    .isInt({ min: 1 })
-    .withMessage("Invalid subcategory ID"),
+  body("subcategoryId").optional({ values: "falsy" }).isInt({ min: 1 }).withMessage("Invalid subcategory ID"),
   body("mobile").trim().notEmpty().withMessage("Mobile number is required"),
   body("whatsapp").optional({ values: "falsy" }).trim(),
   body("email").optional({ values: "falsy" }).isEmail().withMessage("Invalid email"),
@@ -63,6 +64,11 @@ const createBusinessValidator = [
 const updateBusinessValidator = [
   body("businessName").optional().trim().notEmpty().withMessage("Business name cannot be empty"),
   body("slug").optional().trim(),
+  body("price")
+    .optional({ values: "falsy" })
+    .isFloat({ min: 0 })
+    .withMessage("Price must be a positive number"),
+  body("priceLabel").optional().trim(),
   body("categoryId").optional().isInt({ min: 1 }).withMessage("Invalid category ID"),
   body("subcategoryId").optional().isInt({ min: 1 }).withMessage("Invalid subcategory ID"),
   body("mobile").optional().trim(),

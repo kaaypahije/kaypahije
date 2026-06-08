@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS businesses (
   subcategory_id INT UNSIGNED NOT NULL,
   business_name VARCHAR(180) NOT NULL,
   slug VARCHAR(200) NOT NULL UNIQUE,
+  price DECIMAL(10, 2) NULL,
+  price_label VARCHAR(120) NULL,
   logo VARCHAR(255) NULL,
   banner VARCHAR(255) NULL,
   mobile VARCHAR(20) NOT NULL,

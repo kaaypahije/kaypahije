@@ -564,23 +564,27 @@ export const yashaswiniMartCards: Business[] = [
   },
 ];
 
+const legacyYashaswiniBusinessBySlug = new Map(
+  yashaswiniMartCards.map((business) => [business.slug, business]),
+);
+
 export const yashaswiniMartCategoryNames = [
+  "Supermarket",
+  "Home Essentials",
+  "Snacks & Beverages",
+  "Personal Care",
   "Homemade Foods",
   "Grocery",
   "Gift Items",
   "Wellness Products",
-  "Personal Care Products",
   "Ayurvedic Products",
   "Imitation Jewellery",
   "Organic Foods",
 ];
 
-const yashaswiniMartLegacyCategoryNames = [
-  "Supermarket",
-  "Home Essentials",
-  "Snacks & Beverages",
-  "Personal Care",
-];
+const yashaswiniMartCategoryAliases = ["Personal Care Products"];
+
+export const allYashaswiniMartCategoryNames = yashaswiniMartCategoryNames;
 
 function normalizeCategoryKey(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -588,7 +592,7 @@ function normalizeCategoryKey(value: string) {
 
 const yashaswiniMartCategoryKeySet = new Set([
   ...yashaswiniMartCategoryNames.map((name) => normalizeCategoryKey(name)),
-  ...yashaswiniMartLegacyCategoryNames.map((name) => normalizeCategoryKey(name)),
+  ...yashaswiniMartCategoryAliases.map((name) => normalizeCategoryKey(name)),
 ]);
 
 export function isYashaswiniMartCategoryName(categoryName: string | null | undefined) {
@@ -627,6 +631,62 @@ function resolveAssetPath(path: string | null | undefined) {
   }
 
   return `${API_BASE}/${path}`;
+}
+
+function formatPriceAmount(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return String(value).trim();
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: Number.isInteger(numericValue) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(numericValue);
+}
+
+export function extractPriceValue(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const match = value.replace(/,/g, "").match(/\d+(?:\.\d+)?/);
+  if (!match) {
+    return null;
+  }
+
+  const numericValue = Number(match[0]);
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+export function normalizeCardPriceText(value: string | null | undefined) {
+  if (!value) {
+    return "Price on request";
+  }
+
+  const firstDigitIndex = value.search(/\d/);
+  if (firstDigitIndex === -1) {
+    return value.trim();
+  }
+
+  return value.slice(firstDigitIndex).trim();
+}
+
+function formatBusinessPriceDisplay(
+  value: string | number | null | undefined,
+  priceLabel: string | null | undefined,
+) {
+  const formattedAmount = formatPriceAmount(value);
+  if (!formattedAmount) {
+    return undefined;
+  }
+
+  const suffix = priceLabel?.trim();
+  return [formattedAmount, suffix].filter(Boolean).join(" ");
 }
 
 function pickIcon(categoryName: string) {
@@ -672,7 +732,38 @@ export function mergeWithLegacyCategories(apiCategories: SiteCategory[] = []) {
   return merged;
 }
 
+export function getBrowsableCategories(apiCategories: SiteCategory[] = []) {
+  const merged: SiteCategory[] = [];
+  const existing = new Set<string>();
+  const filteredApiCategories = apiCategories.filter((category) => !isYashaswiniMartCategoryName(category.name));
+
+  for (const category of legacyCategories) {
+    if (isYashaswiniMartCategoryName(category.name)) {
+      continue;
+    }
+
+    const key = category.slug.toLowerCase();
+    const apiCategory = filteredApiCategories.find((item) => item.slug.toLowerCase() === key);
+
+    merged.push(apiCategory || category);
+    existing.add(key);
+  }
+
+  for (const category of filteredApiCategories) {
+    const key = category.slug.toLowerCase();
+    if (existing.has(key)) {
+      continue;
+    }
+
+    merged.push(category);
+    existing.add(key);
+  }
+
+  return merged;
+}
+
 export function mapApiBusinessToSite(business: ApiBusiness): Business {
+  const legacyFallback = legacyYashaswiniBusinessBySlug.get(business.slug);
   const image =
     resolveAssetPath(business.banner) ||
     resolveAssetPath(business.logo) ||
@@ -702,7 +793,9 @@ export function mapApiBusinessToSite(business: ApiBusiness): Business {
     image,
     description: business.description || "",
     tags: (business.services || []).slice(0, 8),
-    price: isYashaswiniMartCategoryName(categoryName) ? business.price || "Price on request" : undefined,
+    price: isYashaswiniMartCategoryName(categoryName)
+      ? formatBusinessPriceDisplay(business.price, business.priceLabel) || legacyFallback?.price
+      : undefined,
     imageLink: mapLink,
     verified: business.verified,
     featured: business.featured,

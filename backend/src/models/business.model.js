@@ -29,6 +29,15 @@ const Business = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
+    priceLabel: {
+      field: "price_label",
+      type: DataTypes.STRING(120),
+      allowNull: true,
+    },
     logo: {
       type: DataTypes.STRING(255),
       allowNull: true,

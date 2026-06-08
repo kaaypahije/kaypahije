@@ -39,6 +39,7 @@ export interface Business {
   businessName: string;
   slug: string;
   price?: string | null;
+  priceLabel?: string | null;
   logo: string | null;
   banner: string | null;
   mobile: string;
@@ -103,4 +104,9 @@ export interface DashboardStats {
     count: number;
   }>;
   recentBusinesses: Business[];
+}
+
+export interface HeroSettings {
+  heroBannerPrimary: string | null;
+  heroBannerSecondary: string | null;
 }

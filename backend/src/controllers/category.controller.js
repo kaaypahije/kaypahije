@@ -5,6 +5,20 @@ const asyncHandler = require("../utils/asyncHandler");
 const { toPublicFilePath, removeLocalFile } = require("../utils/file");
 const { generateUniqueSlug } = require("../utils/slugify");
 
+const defaultYashaswiniCategories = [
+  "Supermarket",
+  "Home Essentials",
+  "Snacks & Beverages",
+  "Personal Care",
+  "Homemade Foods",
+  "Grocery",
+  "Gift Items",
+  "Wellness Products",
+  "Ayurvedic Products",
+  "Imitation Jewellery",
+  "Organic Foods",
+];
+
 function parseBoolean(value, fallback = false) {
   if (value === undefined || value === null || value === "") {
     return fallback;
@@ -14,6 +28,50 @@ function parseBoolean(value, fallback = false) {
   }
   return String(value).toLowerCase() === "true";
 }
+
+const syncYashaswiniCategories = asyncHandler(async (_req, res) => {
+  const existingCategories = await Category.findAll({
+    attributes: ["id", "name"],
+  });
+
+  const existingNames = new Set(
+    existingCategories.map((category) => String(category.name).trim().toLowerCase()),
+  );
+
+  const created = [];
+  const skipped = [];
+
+  for (const name of defaultYashaswiniCategories) {
+    const normalizedName = name.trim().toLowerCase();
+
+    if (existingNames.has(normalizedName)) {
+      skipped.push(name);
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    const slug = await generateUniqueSlug(Category, name);
+    const category = await Category.create({
+      name,
+      slug,
+      description: `${name} listings for Yashaswini Mart`,
+      featured: false,
+      status: "active",
+    });
+
+    created.push(category.name);
+    existingNames.add(normalizedName);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Yashaswini categories synced successfully",
+    data: {
+      created,
+      skipped,
+    },
+  });
+});
 
 const createCategory = asyncHandler(async (req, res) => {
   const { name, slug, description, status } = req.body;
@@ -186,4 +244,5 @@ module.exports = {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  syncYashaswiniCategories,
 };
