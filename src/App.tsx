@@ -6,6 +6,12 @@ import { FloatingActions } from "@/components/site/FloatingActions";
 import { AdminProtectedRoute } from "@/admin/routes/AdminProtectedRoute";
 import { AdminLayout } from "@/admin/layout/AdminLayout";
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 const AboutPage = lazy(() => import("@/routes/about").then((module) => ({ default: module.AboutPage })));
 const BlogPage = lazy(() => import("@/routes/blog").then((module) => ({ default: module.BlogPage })));
 const CategoriesPage = lazy(() => import("@/routes/categories").then((module) => ({ default: module.CategoriesPage })));
@@ -71,6 +77,24 @@ function ScrollToTop() {
   return null;
 }
 
+function TrackPageViews() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!window.gtag) {
+      return;
+    }
+
+    window.gtag("event", "page_view", {
+      page_title: document.title,
+      page_path: `${location.pathname}${location.search}${location.hash}`,
+      page_location: window.location.href,
+    });
+  }, [location.pathname, location.search, location.hash]);
+
+  return null;
+}
+
 function AppShell() {
   const { pathname } = useLocation();
   const hideChrome = pathname === "/login" || pathname.startsWith("/admin");
@@ -78,6 +102,7 @@ function AppShell() {
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollToTop />
+      <TrackPageViews />
       {!hideChrome && <Header />}
       <main className="flex-1">
         <Suspense

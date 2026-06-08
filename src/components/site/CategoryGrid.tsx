@@ -20,7 +20,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { legacyCategories, mapApiCategoryToSite, mergeWithLegacyCategories, type SiteCategory } from "@/data/businesses";
+import { getBrowsableCategories, mapApiCategoryToSite, type SiteCategory } from "@/data/businesses";
 import { fetchCategories } from "@/services/api";
 
 const iconMap = {
@@ -51,13 +51,15 @@ export function CategoryGrid({
   mode = "default",
   onCategoryClick,
   activeCategory,
+  excludeSlugs = [],
 }: {
   limit?: number;
   mode?: "default" | "home";
   onCategoryClick?: (category: SiteCategory) => void;
   activeCategory?: string;
+  excludeSlugs?: string[];
 }) {
-  const [categories, setCategories] = useState<SiteCategory[]>(legacyCategories);
+  const [categories, setCategories] = useState<SiteCategory[]>(() => getBrowsableCategories());
 
   useEffect(() => {
     let active = true;
@@ -69,10 +71,10 @@ export function CategoryGrid({
           return;
         }
         const mapped = response.data.map((category, index) => mapApiCategoryToSite(category, index));
-        setCategories(mergeWithLegacyCategories(mapped));
+        setCategories(getBrowsableCategories(mapped));
       } catch (_error) {
         if (active) {
-          setCategories(legacyCategories);
+          setCategories(getBrowsableCategories());
         }
       }
     }
@@ -84,7 +86,9 @@ export function CategoryGrid({
     };
   }, []);
 
-  const items = limit ? categories.slice(0, limit) : categories;
+  const excludedSlugSet = new Set(excludeSlugs.map((slug) => slug.toLowerCase()));
+  const filteredCategories = categories.filter((category) => !excludedSlugSet.has(category.slug.toLowerCase()));
+  const items = limit ? filteredCategories.slice(0, limit) : filteredCategories;
   const isHome = mode === "home";
 
   function renderCategoryIcon(category: SiteCategory, Icon: (typeof iconMap)[IconName]) {

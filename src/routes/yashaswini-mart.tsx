@@ -20,8 +20,6 @@ export function YashaswiniMartPage() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORIES);
   const [search, setSearch] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState<"default" | "priceAsc" | "priceDesc">("default");
 
   useEffect(() => {
@@ -61,20 +59,8 @@ export function YashaswiniMartPage() {
 
   const baseFilteredCards = useMemo(() => {
     const searchTerm = search.trim().toLowerCase();
-    const minPriceValue = minPrice ? Number(minPrice) : null;
-    const maxPriceValue = maxPrice ? Number(maxPrice) : null;
 
     return cards.filter((business) => {
-      const priceValue = extractPriceValue(business.price);
-
-      if (minPriceValue !== null && (!priceValue || priceValue < minPriceValue)) {
-        return false;
-      }
-
-      if (maxPriceValue !== null && (!priceValue || priceValue > maxPriceValue)) {
-        return false;
-      }
-
       if (!searchTerm) {
         return true;
       }
@@ -94,7 +80,7 @@ export function YashaswiniMartPage() {
 
       return haystack.includes(searchTerm);
     });
-  }, [cards, maxPrice, minPrice, search]);
+  }, [cards, search]);
 
   const availableCategories = useMemo(() => {
     const labelsByKey = new Map<string, string>();
@@ -211,34 +197,16 @@ export function YashaswiniMartPage() {
             </div>
           </div>
 
-          <div className="shrink-0 text-sm font-medium text-[#66738f]">
-            {loading ? "Loading filters..." : `${visibleCards.length} result${visibleCards.length === 1 ? "" : "s"}`}
-          </div>
+        <div className="shrink-0 text-sm font-medium text-[#66738f]">
+          {loading ? "Loading filters..." : `${visibleCards.length} result${visibleCards.length === 1 ? "" : "s"}`}
         </div>
+      </div>
 
-        <div className="mt-3 grid gap-3 border-t border-[#edf1f8] px-2 pt-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))_auto]">
+        <div className="mt-3 grid gap-3 border-t border-[#edf1f8] px-2 pt-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto]">
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search products, tags, category..."
-            className="rounded-2xl border border-[#e3e8f3] px-4 py-2.5 text-sm text-[#23325d] outline-none focus:border-[#f39a4f]"
-          />
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={minPrice}
-            onChange={(event) => setMinPrice(event.target.value)}
-            placeholder="Min price"
-            className="rounded-2xl border border-[#e3e8f3] px-4 py-2.5 text-sm text-[#23325d] outline-none focus:border-[#f39a4f]"
-          />
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={maxPrice}
-            onChange={(event) => setMaxPrice(event.target.value)}
-            placeholder="Max price"
             className="rounded-2xl border border-[#e3e8f3] px-4 py-2.5 text-sm text-[#23325d] outline-none focus:border-[#f39a4f]"
           />
           <select
@@ -254,8 +222,6 @@ export function YashaswiniMartPage() {
             type="button"
             onClick={() => {
               setSearch("");
-              setMinPrice("");
-              setMaxPrice("");
               setSortBy("default");
               setActiveCategory(ALL_CATEGORIES);
             }}
@@ -275,7 +241,7 @@ export function YashaswiniMartPage() {
           visibleCards.map((business, index) => <BusinessCard key={business.id} b={business} index={index} />)
         ) : (
           <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
-            No listings match the selected filters yet.
+            No listings available yet.
           </div>
         )}
       </div>

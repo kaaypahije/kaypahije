@@ -67,7 +67,7 @@ npm run seed:admin
 
 Seed credentials:
 
-- `admin@kaypahije.com`
+- `kaaypahije@gmail.com`
 - `admin123`
 
 API base:

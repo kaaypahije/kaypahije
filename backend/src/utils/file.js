@@ -1,8 +1,9 @@
 const path = require("path");
 const fs = require("fs");
+const env = require("../config/env");
 
 function toPublicFilePath(fullPath) {
-  const uploadsRoot = path.resolve(process.cwd(), "uploads");
+  const uploadsRoot = env.uploadsDir;
   const relative = path.relative(uploadsRoot, fullPath);
   return `/uploads/${relative.replace(/\\/g, "/")}`;
 }
@@ -13,7 +14,7 @@ function removeLocalFile(publicPath) {
   }
 
   const relativePath = publicPath.replace(/^\/uploads\//, "");
-  const filePath = path.resolve(process.cwd(), "uploads", relativePath);
+  const filePath = path.resolve(env.uploadsDir, relativePath);
 
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);

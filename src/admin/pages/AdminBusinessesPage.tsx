@@ -157,6 +157,10 @@ export function AdminBusinessesPage() {
   const watchedLogo = watch("logo");
   const watchedBanner = watch("banner");
   const watchedCategoryId = watch("categoryId");
+  const selectedFormCategory = useMemo(
+    () => categories.find((category) => category.id === Number(watchedCategoryId)) || null,
+    [categories, watchedCategoryId],
+  );
 
   const yashaswiniCategoryIds = useMemo(
     () =>
@@ -168,6 +172,10 @@ export function AdminBusinessesPage() {
 
   const isYashaswiniMode =
     isYashaswiniSegment || categoryFilter === YASHASWINI_FILTER_VALUE;
+  const canAutoAssignSubcategory =
+    !isYashaswiniMode &&
+    Number(watchedCategoryId) > 0 &&
+    subcategoryOptions.length === 0;
 
   const formCategories = useMemo(() => {
     if (!isYashaswiniMode) {
@@ -523,7 +531,7 @@ export function AdminBusinessesPage() {
       formData.append("slug", values.slug);
     }
     formData.append("categoryId", String(values.categoryId));
-    if (!isYashaswiniMode || values.subcategoryId > 0) {
+    if (values.subcategoryId > 0) {
       formData.append("subcategoryId", String(values.subcategoryId));
     }
     formData.append("mobile", values.mobile);
@@ -945,13 +953,24 @@ export function AdminBusinessesPage() {
                   <label className="mb-1.5 block text-sm font-semibold text-[#3f4c74]">Subcategory *</label>
                   <select
                     {...register("subcategoryId", {
-                      required: "Subcategory is required",
                       valueAsNumber: true,
-                      min: { value: 1, message: "Please select a subcategory" },
+                      validate: (value) => {
+                        if (canAutoAssignSubcategory || Number(watchedCategoryId) === 0) {
+                          return true;
+                        }
+                        return value > 0 || "Please select a subcategory";
+                      },
                     })}
+                    disabled={Number(watchedCategoryId) === 0 || canAutoAssignSubcategory}
                     className="w-full rounded-xl border border-[#e3e8f3] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f39a4f]"
                   >
-                    <option value={0}>Select subcategory</option>
+                    <option value={0}>
+                      {Number(watchedCategoryId) === 0
+                        ? "Select category first"
+                        : canAutoAssignSubcategory
+                          ? "No subcategories available"
+                          : "Select subcategory"}
+                    </option>
                     {subcategoryOptions.map((subcategory) => (
                       <option key={subcategory.id} value={subcategory.id}>
                         {subcategory.name}
@@ -960,6 +979,12 @@ export function AdminBusinessesPage() {
                   </select>
                   {errors.subcategoryId ? (
                     <p className="mt-1 text-xs text-red-600">{errors.subcategoryId.message}</p>
+                  ) : null}
+                  {canAutoAssignSubcategory ? (
+                    <p className="mt-1 text-xs text-[#8a96b5]">
+                      No subcategories exist for {selectedFormCategory?.name || "this category"} yet. Saving will
+                      auto-assign a General subcategory.
+                    </p>
                   ) : null}
                 </div>
               )}

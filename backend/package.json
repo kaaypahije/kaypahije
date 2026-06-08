@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Business Directory backend API",
   "main": "src/server.js",
+  "engines": {
+    "node": ">=22.12.0 <25"
+  },
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",

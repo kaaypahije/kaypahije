@@ -4,6 +4,7 @@ import type {
   Business,
   Category,
   DashboardStats,
+  HeroSettings,
   Subcategory,
 } from "@/types/directory";
 import { request } from "./http";
@@ -44,6 +45,19 @@ export function fetchAuthUser(token: string) {
 
 export function fetchDashboardStats(token: string) {
   return request<{ success: boolean; data: DashboardStats }>("/api/dashboard/stats", { token });
+}
+
+export function fetchHeroSettings() {
+  return request<{ success: boolean; data: HeroSettings }>("/api/site-settings/hero");
+}
+
+export function updateHeroSettings(token: string, formData: FormData) {
+  return request<{ success: boolean; message: string; data: HeroSettings }>("/api/site-settings/hero", {
+    method: "PUT",
+    body: formData,
+    token,
+    isFormData: true,
+  });
 }
 
 export interface ListQuery {

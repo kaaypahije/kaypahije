@@ -42,7 +42,7 @@ export function ContactPage() {
         <div className="space-y-3">
           {[
             { icon: Phone, t: "Phone", d: "+91 98765 43210" },
-            { icon: Mail, t: "Email", d: "hello@kaypahije.com" },
+            { icon: Mail, t: "Email", d: "kaaypahije@gmail.com" },
             { icon: MapPin, t: "Office", d: "Pune, Maharashtra, India" },
           ].map((i) => (
             <div

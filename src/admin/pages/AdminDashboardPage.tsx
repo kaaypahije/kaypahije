@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Bar,
@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import {
   FolderTree,
+  ImageUp,
   Layers,
   Building2,
   Sparkles,
@@ -21,8 +22,9 @@ import {
   CircleCheckBig,
 } from "lucide-react";
 import { SectionCard } from "@/admin/components/SectionCard";
-import { fetchDashboardStats } from "@/services/api";
-import type { DashboardStats } from "@/types/directory";
+import { fetchDashboardStats, fetchHeroSettings, updateHeroSettings } from "@/services/api";
+import { buildApiUrl } from "@/services/http";
+import type { DashboardStats, HeroSettings } from "@/types/directory";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -45,10 +47,49 @@ function formatDate(value: string) {
   });
 }
 
+function resolveImage(path: string | null | undefined) {
+  if (!path) {
+    return "";
+  }
+
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  return buildApiUrl(path);
+}
+
 export function AdminDashboardPage() {
   const { token } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [heroSettings, setHeroSettings] = useState<HeroSettings | null>(null);
+  const [savingHero, setSavingHero] = useState(false);
+  const [deletingBanner, setDeletingBanner] = useState<"primary" | "secondary" | null>(null);
+  const [heroBannerPrimaryFile, setHeroBannerPrimaryFile] = useState<File | null>(null);
+  const [heroBannerSecondaryFile, setHeroBannerSecondaryFile] = useState<File | null>(null);
+  const primaryInputRef = useRef<HTMLInputElement | null>(null);
+  const secondaryInputRef = useRef<HTMLInputElement | null>(null);
+
+  const heroPrimaryPreview = useMemo(
+    () => (heroBannerPrimaryFile ? URL.createObjectURL(heroBannerPrimaryFile) : ""),
+    [heroBannerPrimaryFile],
+  );
+  const heroSecondaryPreview = useMemo(
+    () => (heroBannerSecondaryFile ? URL.createObjectURL(heroBannerSecondaryFile) : ""),
+    [heroBannerSecondaryFile],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (heroPrimaryPreview) {
+        URL.revokeObjectURL(heroPrimaryPreview);
+      }
+      if (heroSecondaryPreview) {
+        URL.revokeObjectURL(heroSecondaryPreview);
+      }
+    };
+  }, [heroPrimaryPreview, heroSecondaryPreview]);
 
   useEffect(() => {
     let active = true;
@@ -83,6 +124,30 @@ export function AdminDashboardPage() {
     };
   }, [token]);
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadHeroSettings() {
+      try {
+        const response = await fetchHeroSettings();
+        if (active) {
+          setHeroSettings(response.data);
+        }
+      } catch (error) {
+        if (active) {
+          const message = error instanceof Error ? error.message : "Failed to load hero banners";
+          toast.error(message);
+        }
+      }
+    }
+
+    loadHeroSettings();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const pieData = useMemo(() => {
     if (!stats) {
       return [];
@@ -99,6 +164,82 @@ export function AdminDashboardPage() {
       },
     ];
   }, [stats]);
+
+  const primaryBannerImage = heroPrimaryPreview || resolveImage(heroSettings?.heroBannerPrimary);
+  const secondaryBannerImage = heroSecondaryPreview || resolveImage(heroSettings?.heroBannerSecondary);
+
+  async function handleHeroSettingsSave() {
+    if (!token) {
+      return;
+    }
+
+    if (!heroBannerPrimaryFile && !heroBannerSecondaryFile) {
+      toast.error("Select at least one hero banner image");
+      return;
+    }
+
+    const formData = new FormData();
+    if (heroBannerPrimaryFile) {
+      formData.append("heroBannerPrimary", heroBannerPrimaryFile);
+    }
+    if (heroBannerSecondaryFile) {
+      formData.append("heroBannerSecondary", heroBannerSecondaryFile);
+    }
+
+    try {
+      setSavingHero(true);
+      const response = await updateHeroSettings(token, formData);
+      setHeroSettings(response.data);
+      setHeroBannerPrimaryFile(null);
+      setHeroBannerSecondaryFile(null);
+      if (primaryInputRef.current) {
+        primaryInputRef.current.value = "";
+      }
+      if (secondaryInputRef.current) {
+        secondaryInputRef.current.value = "";
+      }
+      toast.success("Hero banners updated");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update hero banners";
+      toast.error(message);
+    } finally {
+      setSavingHero(false);
+    }
+  }
+
+  async function handleHeroBannerDelete(target: "primary" | "secondary") {
+    if (!token) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append(target === "primary" ? "removeHeroBannerPrimary" : "removeHeroBannerSecondary", "true");
+
+    try {
+      setDeletingBanner(target);
+      const response = await updateHeroSettings(token, formData);
+      setHeroSettings(response.data);
+
+      if (target === "primary") {
+        setHeroBannerPrimaryFile(null);
+        if (primaryInputRef.current) {
+          primaryInputRef.current.value = "";
+        }
+      } else {
+        setHeroBannerSecondaryFile(null);
+        if (secondaryInputRef.current) {
+          secondaryInputRef.current.value = "";
+        }
+      }
+
+      toast.success(`Hero banner ${target === "primary" ? "1" : "2"} deleted`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete hero banner";
+      toast.error(message);
+    } finally {
+      setDeletingBanner(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -160,6 +301,101 @@ export function AdminDashboardPage() {
           >
             View Frontend Yashaswini Page
           </Link>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="Homepage Hero Banners"
+        subtitle="Update the two banner images shown in the frontend hero section"
+        action={
+          <button
+            type="button"
+            onClick={handleHeroSettingsSave}
+            disabled={savingHero}
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#f28a32] to-[#ffb16a] px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {savingHero ? "Saving..." : "Save Hero Banners"}
+          </button>
+        }
+      >
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#1f2b52]">
+              <ImageUp className="h-4 w-4 text-[#e3721a]" />
+              Hero Banner 1
+            </div>
+            <label className="block rounded-2xl border border-dashed border-[#d9e2f1] bg-[#fafbfd] p-4">
+              <span className="mb-2 block text-sm font-medium text-[#425071]">
+                {primaryBannerImage ? "Replace image" : "Upload image"}
+              </span>
+              <input
+                ref={primaryInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(event) => setHeroBannerPrimaryFile(event.target.files?.[0] || null)}
+                className="block w-full text-sm text-[#66738f] file:mr-4 file:rounded-xl file:border-0 file:bg-[#fff1e7] file:px-4 file:py-2 file:font-semibold file:text-[#e3721a]"
+              />
+              <p className="mt-2 text-xs text-[#7d89a8]">Recommended: wide desktop banner image.</p>
+            </label>
+            <div className="overflow-hidden rounded-2xl border border-[#e8ebf5] bg-[#f7f9fc]">
+              {primaryBannerImage ? (
+                <img src={primaryBannerImage} alt="Hero banner 1 preview" className="h-48 w-full object-cover" />
+              ) : (
+                <div className="flex h-48 items-center justify-center text-sm text-[#7d89a8]">
+                  No banner uploaded yet
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleHeroBannerDelete("primary")}
+                disabled={!heroSettings?.heroBannerPrimary || deletingBanner === "primary" || savingHero}
+                className="inline-flex items-center rounded-xl border border-[#f3d6d6] bg-white px-4 py-2 text-sm font-semibold text-[#c45050] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deletingBanner === "primary" ? "Deleting..." : "Delete Banner"}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#1f2b52]">
+              <ImageUp className="h-4 w-4 text-[#e3721a]" />
+              Hero Banner 2
+            </div>
+            <label className="block rounded-2xl border border-dashed border-[#d9e2f1] bg-[#fafbfd] p-4">
+              <span className="mb-2 block text-sm font-medium text-[#425071]">
+                {secondaryBannerImage ? "Replace image" : "Upload image"}
+              </span>
+              <input
+                ref={secondaryInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(event) => setHeroBannerSecondaryFile(event.target.files?.[0] || null)}
+                className="block w-full text-sm text-[#66738f] file:mr-4 file:rounded-xl file:border-0 file:bg-[#fff1e7] file:px-4 file:py-2 file:font-semibold file:text-[#e3721a]"
+              />
+              <p className="mt-2 text-xs text-[#7d89a8]">Recommended: same ratio as banner 1.</p>
+            </label>
+            <div className="overflow-hidden rounded-2xl border border-[#e8ebf5] bg-[#f7f9fc]">
+              {secondaryBannerImage ? (
+                <img src={secondaryBannerImage} alt="Hero banner 2 preview" className="h-48 w-full object-cover" />
+              ) : (
+                <div className="flex h-48 items-center justify-center text-sm text-[#7d89a8]">
+                  No banner uploaded yet
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleHeroBannerDelete("secondary")}
+                disabled={!heroSettings?.heroBannerSecondary || deletingBanner === "secondary" || savingHero}
+                className="inline-flex items-center rounded-xl border border-[#f3d6d6] bg-white px-4 py-2 text-sm font-semibold text-[#c45050] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deletingBanner === "secondary" ? "Deleting..." : "Delete Banner"}
+              </button>
+            </div>
+          </div>
         </div>
       </SectionCard>
 

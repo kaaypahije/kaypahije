@@ -4,6 +4,7 @@ const categoryRoutes = require("./category.routes");
 const subcategoryRoutes = require("./subcategory.routes");
 const businessRoutes = require("./business.routes");
 const dashboardRoutes = require("./dashboard.routes");
+const siteSettingRoutes = require("./siteSetting.routes");
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use("/categories", categoryRoutes);
 router.use("/subcategories", subcategoryRoutes);
 router.use("/businesses", businessRoutes);
 router.use("/dashboard", dashboardRoutes);
+router.use("/site-settings", siteSettingRoutes);
 
 module.exports = router;

@@ -10,7 +10,7 @@ async function run() {
     await sequelize.authenticate();
     await sequelize.sync({ alter: false });
 
-    const email = "admin@kaypahije.com";
+    const email = "kaaypahije@gmail.com";
     const existing = await User.findOne({ where: { email } });
 
     if (existing) {
@@ -32,7 +32,7 @@ async function run() {
     // eslint-disable-next-line no-console
     console.log("Admin created successfully");
     // eslint-disable-next-line no-console
-    console.log("Email: admin@kaypahije.com");
+    console.log("Email: kaaypahije@gmail.com");
     // eslint-disable-next-line no-console
     console.log("Password: admin123");
 

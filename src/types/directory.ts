@@ -105,3 +105,8 @@ export interface DashboardStats {
   }>;
   recentBusinesses: Business[];
 }
+
+export interface HeroSettings {
+  heroBannerPrimary: string | null;
+  heroBannerSecondary: string | null;
+}

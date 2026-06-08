@@ -66,7 +66,7 @@ export function Footer() {
                 <Phone className="h-3.5 w-3.5 text-accent" /> +91 98765 43210
               </p>
               <p className="flex items-center gap-2 leading-6">
-                <Mail className="h-3.5 w-3.5 text-accent" /> hello@kaypahije.com
+                <Mail className="h-3.5 w-3.5 text-accent" /> kaaypahije@gmail.com
               </p>
             </div>
             <div className="flex gap-2 pt-1.5">

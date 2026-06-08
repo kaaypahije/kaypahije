@@ -732,6 +732,36 @@ export function mergeWithLegacyCategories(apiCategories: SiteCategory[] = []) {
   return merged;
 }
 
+export function getBrowsableCategories(apiCategories: SiteCategory[] = []) {
+  const merged: SiteCategory[] = [];
+  const existing = new Set<string>();
+  const filteredApiCategories = apiCategories.filter((category) => !isYashaswiniMartCategoryName(category.name));
+
+  for (const category of legacyCategories) {
+    if (isYashaswiniMartCategoryName(category.name)) {
+      continue;
+    }
+
+    const key = category.slug.toLowerCase();
+    const apiCategory = filteredApiCategories.find((item) => item.slug.toLowerCase() === key);
+
+    merged.push(apiCategory || category);
+    existing.add(key);
+  }
+
+  for (const category of filteredApiCategories) {
+    const key = category.slug.toLowerCase();
+    if (existing.has(key)) {
+      continue;
+    }
+
+    merged.push(category);
+    existing.add(key);
+  }
+
+  return merged;
+}
+
 export function mapApiBusinessToSite(business: ApiBusiness): Business {
   const legacyFallback = legacyYashaswiniBusinessBySlug.get(business.slug);
   const image =

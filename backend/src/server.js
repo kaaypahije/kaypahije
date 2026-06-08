@@ -10,8 +10,8 @@ const app = require("./app");
 const { sequelize } = require("./models");
 
 function ensureUploadFolders() {
-  ["categories", "subcategories", "businesses"].forEach((folder) => {
-    fs.mkdirSync(path.resolve(process.cwd(), "uploads", folder), { recursive: true });
+  ["categories", "subcategories", "businesses", "site"].forEach((folder) => {
+    fs.mkdirSync(path.resolve(env.uploadsDir, folder), { recursive: true });
   });
 }
 
