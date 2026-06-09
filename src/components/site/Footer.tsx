@@ -23,7 +23,7 @@ const links = {
 export function Footer() {
   const [showRadioTooltip, setShowRadioTooltip] = useState(false);
   const radioTooltipTimerRef = useRef<number | null>(null);
-  const mapQuery = "Pune, Maharashtra, India";
+  const mapQuery = "Parbhani, Maharashtra, India";
   const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=12&output=embed`;
   const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
 
@@ -59,10 +59,10 @@ export function Footer() {
             </p>
             <div className="space-y-0.5 text-xs md:text-sm text-primary-foreground/80">
               <p className="flex items-center gap-2 leading-6">
-                <MapPin className="h-3.5 w-3.5 text-accent" /> Pune, Maharashtra, India
+                <MapPin className="h-3.5 w-3.5 text-accent" /> Parbhani, Maharashtra, India
               </p>
               <p className="flex items-center gap-2 leading-6">
-                <Phone className="h-3.5 w-3.5 text-accent" /> +91 98765 43210
+                <Phone className="h-3.5 w-3.5 text-accent" /> +91 8763900900, +91 9021414114
               </p>
               <p className="flex items-center gap-2 leading-6">
                 <Mail className="h-3.5 w-3.5 text-accent" /> kaaypahije@gmail.com
@@ -76,15 +76,6 @@ export function Footer() {
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
                   <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.8A3.95 3.95 0 0 0 3.8 7.75v8.5a3.95 3.95 0 0 0 3.95 3.95h8.5a3.95 3.95 0 0 0 3.95-3.95v-8.5a3.95 3.95 0 0 0-3.95-3.95h-8.5Zm9.3 1.35a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z" />
-                </svg>
-              </a>
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-accent transition-colors"
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                  <path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.3-1.5 1.6-1.5h1.7V4.9c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.4V11H8v3h2.1v8h3.4Z" />
                 </svg>
               </a>
               <a
@@ -155,7 +146,7 @@ export function Footer() {
                   <div className="flex items-end justify-between gap-2">
                     <div className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow-soft">
                       <MapPin className="h-3 w-3 text-accent" />
-                      Pune, Maharashtra
+                      Parbhani, Maharashtra
                     </div>
                     <a
                       href={directionsUrl}

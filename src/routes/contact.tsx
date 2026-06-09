@@ -41,9 +41,9 @@ export function ContactPage() {
       <div className="mt-8 grid lg:grid-cols-[1fr_1.05fr] gap-5">
         <div className="space-y-3">
           {[
-            { icon: Phone, t: "Phone", d: "+91 98765 43210" },
+            { icon: Phone, t: "Phone", d: "+91 8763900900, +91 9021414114" },
             { icon: Mail, t: "Email", d: "kaaypahije@gmail.com" },
-            { icon: MapPin, t: "Office", d: "Pune, Maharashtra, India" },
+            { icon: MapPin, t: "Office", d: "Parbhani, Maharashtra, India" },
           ].map((i) => (
             <div
               key={i.t}

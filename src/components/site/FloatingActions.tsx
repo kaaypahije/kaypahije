@@ -11,7 +11,7 @@ export function FloatingActions() {
         {menuOpen && (
           <>
             <a
-              href="https://wa.me/919876543210"
+              href="https://wa.me/918763900900"
               target="_blank"
               rel="noreferrer"
               className="group inline-flex items-center justify-center rounded-full bg-[#25D366] text-white shadow-glow hover:scale-110 transition-transform"
@@ -23,7 +23,7 @@ export function FloatingActions() {
               </svg>
             </a>
             <a
-              href="tel:+919876543210"
+              href="tel:+918763900900"
               className="inline-flex items-center justify-center rounded-full bg-gradient-accent text-accent-foreground shadow-glow hover:scale-110 transition-transform"
               style={{ height: 48, width: 48 }}
               aria-label="Call"

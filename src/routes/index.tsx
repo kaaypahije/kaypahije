@@ -22,6 +22,7 @@ import { DeferredSection } from "@/components/site/DeferredSection";
 import {
   cities,
   isYashaswiniMartCategoryName,
+  legacyCategories,
   legacyBusinesses,
   mapApiBusinessToSite,
   mapApiSubcategoryToSite,
@@ -131,6 +132,18 @@ const defaultHeroSlides = [
       "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80",
   },
 ];
+
+const heroInfoCard = {
+  eyebrow: `Built For ${cities[0]}`,
+  title: `${legacyCategories.length}+ Everyday Categories`,
+  description:
+    "From hospitals and restaurants to AC repair, education, beauty, and Yashaswini Mart, Kay Pahije helps people find useful local services faster.",
+  highlights: [
+    "Hospitals, clinics and emergency care",
+    "Restaurants, hotels and family stays",
+    "Home services, coaching and daily needs",
+  ],
+};
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -343,53 +356,71 @@ export function HomePage() {
                       : "opacity-0 translate-x-4 pointer-events-none"
                   }`}
                 >
-                  <div className="h-full w-full rounded-[1.5rem] bg-gradient-to-r from-[#f7dfcc]/95 via-[#f3c79f]/90 to-[#efb177]/85 p-6 md:p-8 text-[#1a2033] shadow-soft">
-                    <div className="grid h-full items-center gap-6 md:grid-cols-[1.1fr_0.9fr]">
-                      <div className="min-w-0">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-[#ef8f37]/35 bg-[#fff3e9] px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-[#de6b00]">
-                          <Sparkles className="h-3.5 w-3.5" /> {slide.badge}
-                        </span>
-                        {idx === 0 ? (
-                          <h1 className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-[#25304d]">
-                            Tumhala <span className="text-[#e77315]">kay pahije?</span>
-                            <br />
-                            <span className="text-[#2f3a57]">We'll find it for you.</span>
-                          </h1>
-                        ) : (
-                          <h1 className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-[#25304d]">
-                            {slide.headingTop}
-                          </h1>
-                        )}
-                        <p className="mt-4 max-w-2xl text-sm md:text-base text-[#3f4a66]">
-                          {slide.description}
-                        </p>
-                        <div className="mt-6 grid grid-cols-2 gap-2 text-xs md:text-sm">
-                          {slide.points.map((point) => (
-                            <div key={point} className="rounded-xl bg-white/45 px-3 py-2 font-medium">
-                              {point}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="relative hidden h-full min-h-[220px] overflow-hidden rounded-[1.2rem] md:block">
+                  <div
+                    className={`h-full w-full rounded-[1.5rem] shadow-soft ${
+                      idx === 1
+                        ? "overflow-hidden bg-[#e9c19a]"
+                        : "bg-gradient-to-r from-[#f7dfcc]/95 via-[#f3c79f]/90 to-[#efb177]/85 p-6 md:p-8 text-[#1a2033]"
+                    }`}
+                  >
+                    {idx === 1 ? (
+                      <div className="relative h-full min-h-[360px] overflow-hidden rounded-[1.5rem]">
                         <img
                           src={slide.heroImage}
                           alt={slide.headingTop}
                           className="absolute inset-0 h-full w-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#e98336]/65 via-[#db6f1f]/55 to-[#c75c10]/75" />
-                        <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/20" />
-                        <div className="absolute -left-10 -bottom-10 h-44 w-44 rounded-full bg-white/10" />
-                        <div className="absolute inset-0 flex items-end justify-center p-6">
-                          <div className="rounded-2xl border border-white/30 bg-white/20 px-5 py-3 text-center text-white backdrop-blur">
-                            <p className="text-xs uppercase tracking-wider text-white/80">
-                              {slide.rightLabel}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#f1a24d]/15 via-transparent to-[#8a4a12]/30" />
+                        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/20 blur-2xl" />
+                        <div className="absolute -left-12 -bottom-12 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+                      </div>
+                    ) : (
+                      <div className="grid h-full items-center gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                        <div className="min-w-0 max-w-3xl">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-[#ef8f37]/35 bg-[#fff3e9] px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-[#de6b00]">
+                            <Sparkles className="h-3.5 w-3.5" /> {slide.badge}
+                          </span>
+                          <h1 className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-[#25304d]">
+                            Tumhala <span className="text-[#e77315]">kay pahije?</span>
+                            <br />
+                            <span className="text-[#2f3a57]">We'll find it for you.</span>
+                          </h1>
+                          <p className="mt-4 max-w-2xl text-sm md:text-base text-[#3f4a66]">
+                            {slide.description}
+                          </p>
+                          <div className="mt-6 grid grid-cols-2 gap-2 text-xs md:text-sm">
+                            {slide.points.map((point) => (
+                              <div key={point} className="rounded-xl bg-white/45 px-3 py-2 font-medium">
+                                {point}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="hidden lg:flex h-full items-center justify-center">
+                          <div className="w-full max-w-md rounded-[1.4rem] border border-white/40 bg-white/22 p-6 text-[#25304d] backdrop-blur-sm">
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#de6b00]">
+                              {heroInfoCard.eyebrow}
                             </p>
-                            <p className="mt-1 text-xl font-extrabold">{slide.rightValue}</p>
+                            <p className="mt-3 text-3xl font-extrabold leading-tight text-[#25304d]">
+                              {heroInfoCard.title}
+                            </p>
+                            <p className="mt-3 text-sm leading-6 text-[#3f4a66]">
+                              {heroInfoCard.description}
+                            </p>
+                            <div className="mt-5 space-y-2">
+                              {heroInfoCard.highlights.map((point) => (
+                                <div
+                                  key={point}
+                                  className="rounded-xl bg-white/45 px-3 py-2 text-sm font-medium text-[#25304d]"
+                                >
+                                  {point}
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               ))}
